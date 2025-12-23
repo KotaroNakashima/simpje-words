@@ -1,7 +1,8 @@
 {
+  "id": "simple-words",
   "name": "Simple Words English",
   "short_name": "SimpleWords",
-  "description": "シンプルでミニマルな英単語学習アプリ。初級レベルの英単語を品詞別に学習できます。スキマ時間の学習に最適です。"
+  "description": "シンプルでミニマルな英語学習アプリ",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -18,5 +19,5 @@
       "type": "image/png"
     }
   ]
-
 }
+
