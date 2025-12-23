@@ -1,0 +1,2214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>シンプルワード - 英語初級1200単語</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      -webkit-tap-highlight-color:transparent;
+    }
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#f3f4f6;
+      color:#111827;
+    }
+    h1{font-size:26px;margin-bottom:4px;}
+    p{margin:0;}
+
+    /* ===== ホーム（分野一覧） ===== */
+    #homeView{
+      max-width:960px;
+      margin:0 auto;
+      padding:32px 16px 40px;
+      text-align:center;
+    }
+    .home-subtitle{
+      font-size:14px;
+      color:#6b7280;
+      margin-bottom:24px;
+    }
+    .category-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+    }
+    .category-card{
+      position:relative;
+      background:#ffffff;
+      border-radius:22px;
+      padding:18px 16px 16px;
+      text-align:left;
+      box-shadow:0 4px 16px rgba(15,23,42,0.06);
+      cursor:pointer;
+      overflow:hidden;
+      min-height:120px;
+      transition:transform .15s ease, box-shadow .15s ease;
+    }
+    .category-card:hover{
+      transform:translateY(-2px);
+      box-shadow:0 8px 24px rgba(15,23,42,0.12);
+    }
+    .cat-icon{
+      position:absolute;
+      right:14px;
+      top:12px;
+      font-size:26px;
+      opacity:.35;
+    }
+    .cat-title{
+      font-size:17px;
+      font-weight:600;
+      margin-bottom:6px;
+    }
+    .cat-sub{
+      font-size:13px;
+      color:#6b7280;
+      margin-bottom:10px;
+    }
+    .cat-count{
+      font-size:12px;
+      color:#9ca3af;
+    }
+
+    /* ===== 単語カード画面 ===== */
+    #cardView{
+      display:none;
+      max-width:960px;
+      margin:0 auto;
+      padding:16px 16px 24px;
+    }
+    .top-bar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:10px;
+      font-size:14px;
+      color:#4b5563;
+    }
+    .back-link{
+      cursor:pointer;
+    }
+    .category-label{
+      font-size:14px;
+      color:#6b7280;
+    }
+
+    .card-wrapper{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin:0;
+      min-height:calc(100vh - 220px);
+    }
+    .card{
+      position:relative;               /* ★スター配置用 */
+      background:#ffffff;
+      border-radius:28px;
+      box-shadow:0 10px 30px rgba(15,23,42,0.12);
+      padding:28px 20px 30px;
+      width:100%;
+      max-width:480px;
+      text-align:center;
+      cursor:pointer;
+      min-height:360px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    /* ★ 左上のスター */
+    .star-toggle{
+      position:absolute;
+      top:16px;
+      left:18px;
+      font-size:22px;
+      color:#d1d5db;         /* 未保存はうすいグレー */
+      cursor:pointer;
+      user-select:none;
+    }
+    .star-toggle.saved{
+      color:#facc15;         /* 保存済みで黄色 */
+    }
+
+    .counter{
+      font-size:13px;
+      color:#9ca3af;
+      margin-bottom:6px;
+    }
+    .en-word{
+      font-size:34px;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+    .en-sentence{
+      font-size:16px;
+      color:#374151;
+    }
+    .divider{
+      width:60%;
+      height:1px;
+      background:#e5e7eb;
+      margin:18px auto 12px;
+    }
+
+    .jp-word{
+      font-size:24px;
+      font-weight:600;
+      margin-bottom:6px;
+      opacity:0;
+      visibility:hidden;
+      transition:opacity .25s ease;
+    }
+    .jp-sentence{
+      font-size:15px;
+      color:#374151;
+      opacity:0;
+      visibility:hidden;
+      transition:opacity .25s ease;
+    }
+    .card.show-jp .jp-word,
+    .card.show-jp .jp-sentence{
+      opacity:1;
+      visibility:visible;
+    }
+
+    .hint{
+      font-size:13px;
+      color:#6b7280;
+      margin-bottom:10px;
+      text-align:center;
+    }
+
+    /* ★ 保存済みが無いときのメッセージ */
+    .empty-message{
+      display:none;
+      font-size:14px;
+      color:#6b7280;
+      text-align:center;
+      margin:8px 0 4px;
+    }
+
+    /* ★ スライダー */
+    .slider-wrap{
+      max-width:420px;
+      margin:0 auto 4px;
+      padding:0 8px 12px;
+    }
+    #cardSlider{
+      width:100%;
+      -webkit-appearance:none;
+      appearance:none;
+      height:6px;
+      border-radius:999px;
+      background:#e5e7eb;
+      outline:none;
+      cursor:pointer;
+    }
+    #cardSlider::-webkit-slider-thumb{
+      -webkit-appearance:none;
+      appearance:none;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background:#999999;
+      box-shadow:0 2px 6px rgba(0,0,0,0.18);
+      border:none;
+      margin-top:-6px;
+    }
+    #cardSlider::-moz-range-thumb{
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background:#999999;
+      box-shadow:0 2px 6px rgba(0,0,0,0.18);
+      border:none;
+    }
+    #cardSlider::-moz-range-track{
+      background:#e5e7eb;
+      height:6px;
+      border-radius:999px;
+    }
+
+    /* ===== Aboutビュー ===== */
+    #aboutView{
+      display:none;
+      max-width:960px;
+      margin:0 auto;
+      padding:24px 16px 32px;
+    }
+    #aboutView h2{
+      font-size:22px;
+      font-weight:700;
+      margin-bottom:16px;
+    }
+    #aboutView p{
+      font-size:14px;
+      line-height:1.8;
+      color:#374151;
+      margin-bottom:12px;
+    }
+
+    @media (max-width:640px){
+      .card{min-height:340px;}
+      .category-grid{gap:12px;}
+    }
+    .stats{
+  width: 92%;
+  max-width: 520px;
+  margin: 10px auto 18px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  color: #222;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.stats div{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stats div + div{
+  border-top: 1px solid rgba(0,0,0,0.06);
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+@media (min-width: 480px){
+  .stats{ font-size: 15px; }
+}
+  </style>
+  
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffffff">
+
+</head>
+<body>
+
+<!-- ================= ホーム画面 ================= -->
+<div id="homeView">
+  <h1>Simple Words English</h1>
+  <p class="home-subtitle">初級英単語1200をテーマ別に収録 </p>
+  <div class="stats">
+  <div id="streak">🔥 連続学習：0日</div>
+  <div id="totalDays">📅 累計学習：0日</div>
+</div>
+ <div class="category-grid">
+  <div class="category-card" data-id="basic">
+      <div class="cat-icon">🧩</div>
+      <div class="cat-title">基本単語</div>
+      <div class="cat-sub">and, canなど</div>
+      <div class="cat-count">100語</div>
+    </div>
+    
+    <div class="category-card" data-id="verb">
+      <div class="cat-icon">🚶‍♂️</div>
+      <div class="cat-title">動詞</div>
+      <div class="cat-sub">go, make など</div>
+      <div class="cat-count">200語</div>
+    </div>
+
+    <div class="category-card" data-id="noun">
+      <div class="cat-icon">🍎</div>
+      <div class="cat-title">名詞</div>
+      <div class="cat-sub">apple, family など</div>
+      <div class="cat-count">600語</div>
+    </div>
+
+    <div class="category-card" data-id="adjective">
+      <div class="cat-icon">✨</div>
+      <div class="cat-title">形容詞</div>
+      <div class="cat-sub">big, happyなど</div>
+      <div class="cat-count">150語</div>
+    </div>
+
+    <div class="category-card" data-id="adverb">
+      <div class="cat-icon">⏰</div>
+      <div class="cat-title">副詞</div>
+      <div class="cat-sub">quickly, very など</div>
+      <div class="cat-count">100語</div>
+    </div>
+
+    <div class="category-card" data-id="preposition">
+      <div class="cat-icon">📍</div>
+      <div class="cat-title">前置詞</div>
+      <div class="cat-sub">at, inなど</div>
+      <div class="cat-count">50語</div>
+    </div>
+    
+    <!-- ★ 保存済みカテゴリ -->
+    <div class="category-card" data-id="saved">
+      <div class="cat-icon">⭐</div>
+      <div class="cat-title">保存済み</div>
+      <div class="cat-sub">お気に入りの単語</div>
+      <div class="cat-count" id="savedCount">0語</div>
+    </div>
+
+    <!-- ★ Pocket Words情報カード（保存済みの右） -->
+    <div class="category-card" data-id="about">
+      <div class="cat-icon">📘</div>
+      <div class="cat-title">Simple Words</div>
+      <div class="cat-sub">アプリについて</div>
+      <div class="cat-count">Info</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= About画面 ================= -->
+<div id="aboutView">
+  <div class="top-bar" style="margin-bottom:16px;">
+    <div class="back-link" onclick="backFromAbout()">← テーマ一覧へ</div>
+  </div>
+
+  <h2>📘 Simple Wordsについて</h2>
+
+  <p>
+    Simple Wordsは、スマホで気軽に外国語の単語を覚えられるように作られた単語カードアプリです。
+  </p>
+  <p>
+    開発者自身も、英語や中国語、韓国語を学んできた経験があり、
+    「シンプルで分かりやすい単語帳が欲しい」という思いから開発を始めました。
+  </p>
+  <p>
+    シンプルなデザインと、すべての単語に例文が付いていることが特徴です。
+  </p>
+  <p>
+    今後は、Simple Words English の中級版や上級版もリリースしていく予定です。
+  </p>
+  <p>
+    また、韓国語やドイツ語、インドネシア語など、さまざまな言語のPocket Wordsも開発していこうと思っています。
+  </p>
+  <p>
+    あわせて、海外の文化やビジネスについて発信するブログも運営しています。<br>
+    言語だけでなく世界の文化にも触れて頂けたら嬉しいと思います。
+  </p>
+</div>
+
+<!-- ================= 単語カード画面 ================= -->
+<div id="cardView">
+  <div class="top-bar">
+    <div class="back-link" id="backLink">← テーマ一覧へ</div>
+    <div class="category-label" id="categoryLabel"></div>
+  </div>
+
+  <div class="card-wrapper">
+    <div class="card" id="card">
+      <div class="star-toggle" id="starToggle">☆</div> <!-- ★スター -->
+      <div class="counter" id="counterText">1 / 2</div>
+      <div class="en-word" id="enWord">water</div>
+      <div class="en-sentence" id="enSentence">I drink water every day.</div>
+      <div class="divider"></div>
+      <div class="jp-word" id="jpWord">水</div>
+      <div class="jp-sentence" id="jpSentence">私は毎日水を飲みます。</div>
+    </div>
+  </div>
+
+  <p class="empty-message" id="emptySavedMessage">まだ保存された単語がありません。</p>
+
+  <p class="hint">📌 カードを1回タップ＝日本語表示＋音声 / 2回タップ＝次の単語へ</p>
+
+  <div class="slider-wrap" id="sliderWrap">
+    <input type="range" id="cardSlider" min="1" max="2" value="1">
+  </div>
+</div>
+
+<script>
+  // ===== 単語データ：各分野 2語ずつ（後で1200語に拡張OK） =====
+  const wordSets = {
+    verb: [
+{en:"be", jp:"〜である", enSentence:"I am a student.", jpSentence:"私は学生です。"},
+{en:"have", jp:"持つ", enSentence:"I have time.", jpSentence:"時間があります。"},
+{en:"do", jp:"する", enSentence:"I do my homework.", jpSentence:"宿題をします。"},
+{en:"say", jp:"言う", enSentence:"She says hello.", jpSentence:"彼女はこんにちはと言います。"},
+{en:"go", jp:"行く", enSentence:"I go to school.", jpSentence:"学校へ行きます。"},
+
+{en:"get", jp:"得る", enSentence:"I get a job.", jpSentence:"仕事を得ます。"},
+{en:"make", jp:"作る", enSentence:"I make dinner.", jpSentence:"夕食を作ります。"},
+{en:"know", jp:"知っている", enSentence:"I know him.", jpSentence:"彼を知っています。"},
+{en:"think", jp:"考える", enSentence:"I think so.", jpSentence:"そう思います。"},
+{en:"see", jp:"見る", enSentence:"I see a dog.", jpSentence:"犬が見えます。"},
+
+{en:"come", jp:"来る", enSentence:"Please come here.", jpSentence:"ここに来てください。"},
+{en:"want", jp:"欲しい", enSentence:"I want water.", jpSentence:"水が欲しいです。"},
+{en:"use", jp:"使う", enSentence:"I use this app.", jpSentence:"このアプリを使います。"},
+{en:"give", jp:"与える", enSentence:"Give me time.", jpSentence:"時間をください。"},
+{en:"tell", jp:"伝える", enSentence:"Tell me the truth.", jpSentence:"真実を教えてください。"},
+
+{en:"work", jp:"働く", enSentence:"I work here.", jpSentence:"ここで働いています。"},
+{en:"call", jp:"呼ぶ／電話する", enSentence:"I call my friend.", jpSentence:"友達に電話します。"},
+{en:"try", jp:"試す", enSentence:"Try again.", jpSentence:"もう一度試してください。"},
+{en:"ask", jp:"尋ねる", enSentence:"Ask a question.", jpSentence:"質問してください。"},
+{en:"need", jp:"必要とする", enSentence:"I need help.", jpSentence:"助けが必要です。"},
+
+{en:"feel", jp:"感じる", enSentence:"I feel happy.", jpSentence:"幸せに感じます。"},
+{en:"become", jp:"〜になる", enSentence:"He became famous.", jpSentence:"彼は有名になりました。"},
+{en:"leave", jp:"去る", enSentence:"I leave home.", jpSentence:"家を出ます。"},
+{en:"put", jp:"置く", enSentence:"Put it here.", jpSentence:"ここに置いてください。"},
+{en:"mean", jp:"意味する", enSentence:"What does it mean?", jpSentence:"それはどういう意味ですか？"},
+
+{en:"keep", jp:"保つ", enSentence:"Keep calm.", jpSentence:"落ち着いてください。"},
+{en:"let", jp:"〜させる", enSentence:"Let me go.", jpSentence:"行かせてください。"},
+{en:"begin", jp:"始める", enSentence:"The class begins.", jpSentence:"授業が始まります。"},
+{en:"seem", jp:"〜のようだ", enSentence:"It seems easy.", jpSentence:"簡単そうです。"},
+{en:"help", jp:"助ける", enSentence:"Help me please.", jpSentence:"助けてください。"},
+
+{en:"talk", jp:"話す", enSentence:"We talk often.", jpSentence:"よく話します。"},
+{en:"turn", jp:"回す／曲がる", enSentence:"Turn left.", jpSentence:"左に曲がってください。"},
+{en:"start", jp:"始める", enSentence:"Start now.", jpSentence:"今始めましょう。"},
+{en:"show", jp:"見せる", enSentence:"Show me this.", jpSentence:"これを見せてください。"},
+{en:"hear", jp:"聞く", enSentence:"I hear music.", jpSentence:"音楽が聞こえます。"},
+
+{en:"play", jp:"遊ぶ／演奏する", enSentence:"Kids play outside.", jpSentence:"子どもたちは外で遊びます。"},
+{en:"run", jp:"走る", enSentence:"I run every day.", jpSentence:"毎日走ります。"},
+{en:"move", jp:"動く", enSentence:"Please move.", jpSentence:"動いてください。"},
+{en:"live", jp:"住む／生きる", enSentence:"I live in Tokyo.", jpSentence:"東京に住んでいます。"},
+{en:"bring", jp:"持ってくる", enSentence:"Bring your bag.", jpSentence:"バッグを持ってきてください。"},
+
+{en:"believe", jp:"信じる", enSentence:"I believe you.", jpSentence:"あなたを信じます。"},
+{en:"happen", jp:"起こる", enSentence:"What happened?", jpSentence:"何が起きましたか？"},
+{en:"write", jp:"書く", enSentence:"Write your name.", jpSentence:"名前を書いてください。"},
+{en:"sit", jp:"座る", enSentence:"Sit here.", jpSentence:"ここに座ってください。"},
+{en:"stand", jp:"立つ", enSentence:"Stand up.", jpSentence:"立ってください。"},
+
+{en:"lose", jp:"失う", enSentence:"I lost my key.", jpSentence:"鍵をなくしました。"},
+{en:"pay", jp:"支払う", enSentence:"Pay the bill.", jpSentence:"支払いをしてください。"},
+{en:"meet", jp:"会う", enSentence:"I meet her.", jpSentence:"彼女に会います。"},
+{en:"include", jp:"含む", enSentence:"The price includes tax.", jpSentence:"価格には税金が含まれます。"},
+{en:"continue", jp:"続ける", enSentence:"Please continue.", jpSentence:"続けてください。"},
+
+{en:"set", jp:"設定する", enSentence:"Set the time.", jpSentence:"時間を設定してください。"},
+{en:"learn", jp:"学ぶ", enSentence:"I learn English.", jpSentence:"英語を学びます。"},
+{en:"change", jp:"変える", enSentence:"Change your plan.", jpSentence:"計画を変えてください。"},
+{en:"lead", jp:"導く", enSentence:"He leads the team.", jpSentence:"彼はチームを率いています。"},
+{en:"understand", jp:"理解する", enSentence:"I understand.", jpSentence:"理解しました。"},
+
+{en:"watch", jp:"見る", enSentence:"I watch TV.", jpSentence:"テレビを見ます。"},
+{en:"follow", jp:"従う", enSentence:"Follow me.", jpSentence:"私についてきてください。"},
+{en:"stop", jp:"止まる", enSentence:"Stop here.", jpSentence:"ここで止まってください。"},
+{en:"speak", jp:"話す", enSentence:"Speak English.", jpSentence:"英語を話してください。"},
+{en:"read", jp:"読む", enSentence:"I read books.", jpSentence:"本を読みます。"},
+
+{en:"allow", jp:"許す", enSentence:"This allows entry.", jpSentence:"入場が許可されています。"},
+{en:"add", jp:"加える", enSentence:"Add sugar.", jpSentence:"砂糖を加えてください。"},
+{en:"spend", jp:"使う", enSentence:"I spend money.", jpSentence:"お金を使います。"},
+{en:"grow", jp:"成長する", enSentence:"Children grow fast.", jpSentence:"子どもは早く成長します。"},
+{en:"open", jp:"開ける", enSentence:"Open the door.", jpSentence:"ドアを開けてください。"},
+
+{en:"walk", jp:"歩く", enSentence:"I walk home.", jpSentence:"歩いて帰ります。"},
+{en:"win", jp:"勝つ", enSentence:"We win the game.", jpSentence:"試合に勝ちます。"},
+{en:"offer", jp:"提供する", enSentence:"They offer help.", jpSentence:"彼らは助けを提供します。"},
+{en:"remember", jp:"覚えている", enSentence:"Remember this.", jpSentence:"これを覚えてください。"},
+{en:"love", jp:"愛する", enSentence:"I love music.", jpSentence:"音楽が大好きです。"},
+
+{en:"consider", jp:"考慮する", enSentence:"Consider the plan.", jpSentence:"計画を検討してください。"},
+{en:"appear", jp:"現れる", enSentence:"He appears happy.", jpSentence:"彼は幸せそうです。"},
+{en:"buy", jp:"買う", enSentence:"I buy food.", jpSentence:"食べ物を買います。"},
+{en:"wait", jp:"待つ", enSentence:"Wait a moment.", jpSentence:"少し待ってください。"},
+{en:"serve", jp:"仕える／提供する", enSentence:"They serve food.", jpSentence:"料理を提供します。"},
+
+{en:"die", jp:"死ぬ", enSentence:"The plant died.", jpSentence:"その植物は枯れました。"},
+{en:"send", jp:"送る", enSentence:"Send an email.", jpSentence:"メールを送ってください。"},
+{en:"expect", jp:"期待する", enSentence:"I expect good news.", jpSentence:"良い知らせを期待します。"},
+{en:"build", jp:"建てる", enSentence:"They build houses.", jpSentence:"家を建てます。"},
+{en:"stay", jp:"滞在する", enSentence:"Stay here.", jpSentence:"ここにいてください。"},
+
+{en:"fall", jp:"落ちる", enSentence:"Leaves fall.", jpSentence:"葉が落ちます。"},
+{en:"cut", jp:"切る", enSentence:"Cut the paper.", jpSentence:"紙を切ってください。"},
+{en:"reach", jp:"到達する", enSentence:"Reach the goal.", jpSentence:"目標に到達します。"},
+{en:"remain", jp:"残る", enSentence:"Please remain seated.", jpSentence:"着席したままでください。"},
+{en:"suggest", jp:"提案する", enSentence:"I suggest rest.", jpSentence:"休憩を提案します。"},
+
+{en:"raise", jp:"上げる", enSentence:"Raise your hand.", jpSentence:"手を上げてください。"},
+{en:"sell", jp:"売る", enSentence:"They sell books.", jpSentence:"本を売っています。"},
+{en:"decide", jp:"決める", enSentence:"Decide now.", jpSentence:"今決めてください。"},
+{en:"pull", jp:"引く", enSentence:"Pull the door.", jpSentence:"ドアを引いてください。"},
+{en:"return", jp:"戻る", enSentence:"Return home.", jpSentence:"家に戻ってください。"},
+
+{en:"explain", jp:"説明する", enSentence:"Explain it.", jpSentence:"説明してください。"},
+{en:"hope", jp:"望む", enSentence:"I hope so.", jpSentence:"そう願います。"},
+{en:"develop", jp:"発展する", enSentence:"The city develops.", jpSentence:"街は発展します。"},
+{en:"carry", jp:"運ぶ", enSentence:"Carry this box.", jpSentence:"この箱を運んでください。"},
+{en:"break", jp:"壊す", enSentence:"Do not break it.", jpSentence:"壊さないでください。"},
+
+{en:"receive", jp:"受け取る", enSentence:"I received a gift.", jpSentence:"プレゼントを受け取りました。"},
+{en:"agree", jp:"同意する", enSentence:"I agree.", jpSentence:"同意します。"},
+{en:"support", jp:"支援する", enSentence:"We support you.", jpSentence:"あなたを支援します。"},
+{en:"hit", jp:"打つ", enSentence:"He hit the ball.", jpSentence:"彼はボールを打ちました。"},
+{en:"produce", jp:"生産する", enSentence:"They produce cars.", jpSentence:"車を生産しています。"},
+{en:"eat", jp:"食べる", enSentence:"I eat breakfast.", jpSentence:"朝ごはんを食べます。"},
+{en:"cover", jp:"覆う", enSentence:"Cover the box.", jpSentence:"箱を覆ってください。"},
+{en:"catch", jp:"捕まえる", enSentence:"Catch the ball.", jpSentence:"ボールを捕まえてください。"},
+{en:"draw", jp:"描く", enSentence:"I draw a picture.", jpSentence:"絵を描きます。"},
+{en:"choose", jp:"選ぶ", enSentence:"Choose one.", jpSentence:"1つ選んでください。"},
+
+{en:"cause", jp:"引き起こす", enSentence:"This causes trouble.", jpSentence:"これは問題を引き起こします。"},
+{en:"point", jp:"指さす", enSentence:"Point at the map.", jpSentence:"地図を指さしてください。"},
+{en:"listen", jp:"聞く", enSentence:"Listen carefully.", jpSentence:"よく聞いてください。"},
+{en:"reduce", jp:"減らす", enSentence:"Reduce the cost.", jpSentence:"費用を減らします。"},
+{en:"join", jp:"参加する", enSentence:"Join our team.", jpSentence:"私たちのチームに参加してください。"},
+
+{en:"reply", jp:"返信する", enSentence:"Reply soon.", jpSentence:"早く返信してください。"},
+{en:"drink", jp:"飲む", enSentence:"Drink water.", jpSentence:"水を飲んでください。"},
+{en:"sleep", jp:"眠る", enSentence:"I sleep well.", jpSentence:"よく眠ります。"},
+{en:"drive", jp:"運転する", enSentence:"I drive a car.", jpSentence:"車を運転します。"},
+{en:"close", jp:"閉める", enSentence:"Close the door.", jpSentence:"ドアを閉めてください。"},
+
+{en:"plan", jp:"計画する", enSentence:"Plan the trip.", jpSentence:"旅行を計画します。"},
+{en:"share", jp:"共有する", enSentence:"Share this file.", jpSentence:"このファイルを共有してください。"},
+{en:"smile", jp:"微笑む", enSentence:"She smiles.", jpSentence:"彼女は微笑みます。"},
+{en:"cry", jp:"泣く", enSentence:"The baby cries.", jpSentence:"赤ちゃんが泣きます。"},
+{en:"laugh", jp:"笑う", enSentence:"We laugh together.", jpSentence:"一緒に笑います。"},
+
+{en:"arrive", jp:"到着する", enSentence:"I arrive early.", jpSentence:"早く到着します。"},
+{en:"travel", jp:"旅行する", enSentence:"I travel abroad.", jpSentence:"海外旅行します。"},
+{en:"cook", jp:"料理する", enSentence:"I cook dinner.", jpSentence:"夕食を作ります。"},
+{en:"clean", jp:"掃除する", enSentence:"Clean the room.", jpSentence:"部屋を掃除してください。"},
+{en:"wash", jp:"洗う", enSentence:"Wash your hands.", jpSentence:"手を洗ってください。"},
+
+{en:"fix", jp:"直す", enSentence:"Fix the bike.", jpSentence:"自転車を直します。"},
+{en:"check", jp:"確認する", enSentence:"Check the email.", jpSentence:"メールを確認します。"},
+{en:"borrow", jp:"借りる", enSentence:"Borrow a pen.", jpSentence:"ペンを借ります。"},
+{en:"lend", jp:"貸す", enSentence:"Lend me money.", jpSentence:"お金を貸してください。"},
+{en:"save", jp:"保存する", enSentence:"Save the file.", jpSentence:"ファイルを保存します。"},
+
+{en:"miss", jp:"逃す", enSentence:"I miss the bus.", jpSentence:"バスに乗り遅れます。"},
+{en:"accept", jp:"受け入れる", enSentence:"I accept it.", jpSentence:"それを受け入れます。"},
+{en:"refuse", jp:"断る", enSentence:"I refuse the offer.", jpSentence:"その提案を断ります。"},
+{en:"worry", jp:"心配する", enSentence:"Do not worry.", jpSentence:"心配しないでください。"},
+{en:"trust", jp:"信頼する", enSentence:"I trust you.", jpSentence:"あなたを信頼します。"},
+
+{en:"guess", jp:"推測する", enSentence:"Guess the answer.", jpSentence:"答えを推測してください。"},
+{en:"imagine", jp:"想像する", enSentence:"Imagine the future.", jpSentence:"未来を想像してください。"},
+{en:"dream", jp:"夢見る", enSentence:"I dream big.", jpSentence:"大きな夢を見ます。"},
+{en:"forget", jp:"忘れる", enSentence:"Do not forget.", jpSentence:"忘れないでください。"},
+{en:"practice", jp:"練習する", enSentence:"Practice English.", jpSentence:"英語を練習してください。"},
+
+{en:"study", jp:"勉強する", enSentence:"I study every day.", jpSentence:"毎日勉強します。"},
+{en:"teach", jp:"教える", enSentence:"She teaches math.", jpSentence:"彼女は数学を教えます。"},
+{en:"test", jp:"試験する", enSentence:"Test the system.", jpSentence:"システムをテストします。"},
+{en:"fail", jp:"失敗する", enSentence:"I failed once.", jpSentence:"一度失敗しました。"},
+{en:"improve", jp:"改善する", enSentence:"Improve your skills.", jpSentence:"スキルを向上させてください。"},
+
+{en:"finish", jp:"終える", enSentence:"Finish your work.", jpSentence:"仕事を終えてください。"},
+{en:"quit", jp:"やめる", enSentence:"He quit the job.", jpSentence:"彼は仕事を辞めました。"},
+{en:"search", jp:"探す", enSentence:"Search online.", jpSentence:"ネットで探します。"},
+{en:"connect", jp:"接続する", enSentence:"Connect to Wi-Fi.", jpSentence:"Wi-Fiに接続してください。"},
+{en:"separate", jp:"分ける", enSentence:"Separate the trash.", jpSentence:"ゴミを分別してください。"},
+
+{en:"control", jp:"管理する", enSentence:"Control the machine.", jpSentence:"機械を管理します。"},
+{en:"manage", jp:"運営する", enSentence:"Manage the team.", jpSentence:"チームを管理します。"},
+{en:"guide", jp:"案内する", enSentence:"Guide the visitors.", jpSentence:"訪問者を案内します。"},
+{en:"destroy", jp:"破壊する", enSentence:"The fire destroyed it.", jpSentence:"火事で破壊されました。"},
+{en:"repair", jp:"修理する", enSentence:"Repair the phone.", jpSentence:"スマホを修理します。"},
+
+{en:"update", jp:"更新する", enSentence:"Update the app.", jpSentence:"アプリを更新してください。"},
+{en:"download", jp:"ダウンロードする", enSentence:"Download the file.", jpSentence:"ファイルをダウンロードします。"},
+{en:"upload", jp:"アップロードする", enSentence:"Upload a photo.", jpSentence:"写真をアップロードします。"},
+{en:"contact", jp:"連絡する", enSentence:"Contact support.", jpSentence:"サポートに連絡してください。"},
+{en:"text", jp:"メッセージを送る", enSentence:"Text me later.", jpSentence:"後でメッセージしてください。"},
+
+{en:"promise", jp:"約束する", enSentence:"I promise you.", jpSentence:"約束します。"},
+{en:"warn", jp:"警告する", enSentence:"They warned me.", jpSentence:"彼らは私に警告しました。"},
+{en:"advise", jp:"助言する", enSentence:"I advise rest.", jpSentence:"休むことを勧めます。"},
+{en:"remind", jp:"思い出させる", enSentence:"Remind me later.", jpSentence:"後で思い出させてください。"},
+{en:"repeat", jp:"繰り返す", enSentence:"Repeat after me.", jpSentence:"私の後に繰り返してください。"},
+
+{en:"copy", jp:"コピーする", enSentence:"Copy the text.", jpSentence:"文章をコピーしてください。"},
+{en:"paste", jp:"貼り付ける", enSentence:"Paste it here.", jpSentence:"ここに貼り付けてください。"},
+{en:"delete", jp:"削除する", enSentence:"Delete the file.", jpSentence:"ファイルを削除してください。"},
+{en:"print", jp:"印刷する", enSentence:"Print the page.", jpSentence:"ページを印刷してください。"},
+{en:"sign", jp:"署名する", enSentence:"Sign here.", jpSentence:"ここに署名してください。"},
+
+{en:"confirm", jp:"確認する", enSentence:"Confirm the order.", jpSentence:"注文を確認してください。"},
+{en:"cancel", jp:"キャンセルする", enSentence:"Cancel the plan.", jpSentence:"計画をキャンセルします。"},
+{en:"book", jp:"予約する", enSentence:"Book a hotel.", jpSentence:"ホテルを予約します。"},
+{en:"reuse", jp:"再利用する", enSentence:"Reuse this bag.", jpSentence:"この袋を再利用してください。"},
+{en:"touch", jp:"触る", enSentence:"Do not touch.", jpSentence:"触らないでください。"},
+
+{en:"enter", jp:"入る", enSentence:"Enter the room.", jpSentence:"部屋に入ってください。"},
+{en:"exit", jp:"出る", enSentence:"Exit here.", jpSentence:"ここから出てください。"},
+{en:"pick", jp:"選ぶ", enSentence:"Pick one.", jpSentence:"1つ選んでください。"},
+{en:"drop", jp:"落とす", enSentence:"Drop it.", jpSentence:"落としてください。"},
+{en:"push", jp:"押す", enSentence:"Push the button.", jpSentence:"ボタンを押してください。"},
+
+{en:"hold", jp:"持つ", enSentence:"Hold this.", jpSentence:"これを持ってください。"},
+{en:"throw", jp:"投げる", enSentence:"Throw the ball.", jpSentence:"ボールを投げてください。"},
+{en:"climb", jp:"登る", enSentence:"Climb the hill.", jpSentence:"丘を登ります。"},
+{en:"swim", jp:"泳ぐ", enSentence:"I swim well.", jpSentence:"私は泳ぐのが得意です。"},
+{en:"look", jp:"見る", enSentence:"Look at this.", jpSentence:"これを見てください。"},
+
+{en:"listen to", jp:"〜を聞く", enSentence:"Listen to music.", jpSentence:"音楽を聴いてください。"},
+{en:"wait for", jp:"〜を待つ", enSentence:"Wait for me.", jpSentence:"私を待ってください。"},
+{en:"turn on", jp:"つける", enSentence:"Turn on the light.", jpSentence:"電気をつけてください。"},
+{en:"turn off", jp:"消す", enSentence:"Turn off the TV.", jpSentence:"テレビを消してください。"},
+{en:"pick up", jp:"拾う", enSentence:"Pick up the phone.", jpSentence:"電話に出てください。"},
+
+{en:"put down", jp:"置く", enSentence:"Put it down.", jpSentence:"それを置いてください。"},
+{en:"wake up", jp:"起きる", enSentence:"Wake up early.", jpSentence:"早く起きてください。"},
+{en:"sit down", jp:"座る", enSentence:"Sit down here.", jpSentence:"ここに座ってください。"},
+{en:"stand up", jp:"立つ", enSentence:"Stand up now.", jpSentence:"今立ってください。"},
+{en:"look for", jp:"探す", enSentence:"Look for your key.", jpSentence:"鍵を探してください。"},
+
+{en:"take off", jp:"脱ぐ／離陸する", enSentence:"Take off your shoes.", jpSentence:"靴を脱いでください。"},
+{en:"put on", jp:"着る", enSentence:"Put on your coat.", jpSentence:"コートを着てください。"},
+{en:"check out", jp:"チェックアウトする", enSentence:"Check out at noon.", jpSentence:"正午にチェックアウトします。"},
+{en:"log in", jp:"ログインする", enSentence:"Log in to the site.", jpSentence:"サイトにログインしてください。"},
+{en:"log out", jp:"ログアウトする", enSentence:"Log out safely.", jpSentence:"安全にログアウトしてください。"},
+   ],
+    noun: [
+ {en:"man", jp:"男性", enSentence:"He is a man.", jpSentence:"彼は男性です。"},
+{en:"woman", jp:"女性", enSentence:"She is a woman.", jpSentence:"彼女は女性です。"},
+{en:"child", jp:"子ども", enSentence:"The child is happy.", jpSentence:"その子どもは幸せです。"},
+{en:"people", jp:"人々", enSentence:"Many people are here.", jpSentence:"多くの人がここにいます。"},
+{en:"friend", jp:"友達", enSentence:"He is my friend.", jpSentence:"彼は私の友達です。"},
+{en:"family", jp:"家族", enSentence:"I love my family.", jpSentence:"私は家族が大好きです。"},
+{en:"boy", jp:"男の子", enSentence:"The boy runs fast.", jpSentence:"その男の子は速く走ります。"},
+{en:"girl", jp:"女の子", enSentence:"The girl smiles.", jpSentence:"その女の子は微笑みます。"},
+{en:"father", jp:"父", enSentence:"My father works.", jpSentence:"私の父は働いています。"},
+{en:"mother", jp:"母", enSentence:"My mother cooks.", jpSentence:"私の母は料理します。"},
+
+{en:"brother", jp:"兄・弟", enSentence:"I have a brother.", jpSentence:"私は兄（弟）がいます。"},
+{en:"sister", jp:"姉・妹", enSentence:"She is my sister.", jpSentence:"彼女は私の姉（妹）です。"},
+{en:"baby", jp:"赤ちゃん", enSentence:"The baby sleeps.", jpSentence:"赤ちゃんは眠っています。"},
+{en:"name", jp:"名前", enSentence:"My name is Tom.", jpSentence:"私の名前はトムです。"},
+{en:"person", jp:"人", enSentence:"She is a kind person.", jpSentence:"彼女は親切な人です。"},
+{en:"student", jp:"学生", enSentence:"He is a student.", jpSentence:"彼は学生です。"},
+{en:"teacher", jp:"先生", enSentence:"The teacher speaks.", jpSentence:"先生が話します。"},
+{en:"doctor", jp:"医者", enSentence:"She is a doctor.", jpSentence:"彼女は医者です。"},
+{en:"worker", jp:"労働者", enSentence:"The worker rests.", jpSentence:"その労働者は休んでいます。"},
+{en:"boss", jp:"上司", enSentence:"My boss is busy.", jpSentence:"私の上司は忙しいです。"},
+
+{en:"job", jp:"仕事", enSentence:"I like my job.", jpSentence:"私は自分の仕事が好きです。"},
+{en:"work", jp:"仕事", enSentence:"Work is hard.", jpSentence:"仕事は大変です。"},
+{en:"school", jp:"学校", enSentence:"I go to school.", jpSentence:"私は学校に行きます。"},
+{en:"class", jp:"授業", enSentence:"The class starts.", jpSentence:"授業が始まります。"},
+{en:"room", jp:"部屋", enSentence:"This room is clean.", jpSentence:"この部屋はきれいです。"},
+{en:"house", jp:"家", enSentence:"This house is big.", jpSentence:"この家は大きいです。"},
+{en:"home", jp:"家", enSentence:"I am at home.", jpSentence:"私は家にいます。"},
+{en:"door", jp:"ドア", enSentence:"The door is open.", jpSentence:"ドアが開いています。"},
+{en:"window", jp:"窓", enSentence:"The window is closed.", jpSentence:"窓は閉まっています。"},
+{en:"wall", jp:"壁", enSentence:"The wall is white.", jpSentence:"壁は白いです。"},
+
+{en:"floor", jp:"床", enSentence:"The floor is clean.", jpSentence:"床はきれいです。"},
+{en:"chair", jp:"椅子", enSentence:"The chair is new.", jpSentence:"椅子は新しいです。"},
+{en:"table", jp:"テーブル", enSentence:"The table is round.", jpSentence:"テーブルは丸いです。"},
+{en:"bed", jp:"ベッド", enSentence:"The bed is soft.", jpSentence:"ベッドは柔らかいです。"},
+{en:"light", jp:"明かり", enSentence:"The light is on.", jpSentence:"明かりがついています。"},
+{en:"key", jp:"鍵", enSentence:"I have a key.", jpSentence:"私は鍵を持っています。"},
+{en:"bag", jp:"かばん", enSentence:"My bag is heavy.", jpSentence:"私のかばんは重いです。"},
+{en:"box", jp:"箱", enSentence:"The box is small.", jpSentence:"箱は小さいです。"},
+{en:"phone", jp:"電話", enSentence:"My phone rings.", jpSentence:"私の電話が鳴ります。"},
+{en:"computer", jp:"コンピューター", enSentence:"The computer is fast.", jpSentence:"そのコンピューターは速いです。"},
+
+{en:"screen", jp:"画面", enSentence:"The screen is bright.", jpSentence:"画面は明るいです。"},
+{en:"keyboard", jp:"キーボード", enSentence:"The keyboard works.", jpSentence:"キーボードは動きます。"},
+{en:"mouse", jp:"マウス", enSentence:"The mouse moves.", jpSentence:"マウスが動きます。"},
+{en:"book", jp:"本", enSentence:"This book is good.", jpSentence:"この本は良いです。"},
+{en:"notebook", jp:"ノート", enSentence:"I use a notebook.", jpSentence:"私はノートを使います。"},
+{en:"paper", jp:"紙", enSentence:"The paper is white.", jpSentence:"紙は白いです。"},
+{en:"pen", jp:"ペン", enSentence:"This pen is blue.", jpSentence:"このペンは青いです。"},
+{en:"pencil", jp:"鉛筆", enSentence:"I have a pencil.", jpSentence:"私は鉛筆を持っています。"},
+{en:"desk", jp:"机", enSentence:"The desk is clean.", jpSentence:"机はきれいです。"},
+{en:"clock", jp:"時計", enSentence:"The clock stops.", jpSentence:"時計が止まります。"},
+
+{en:"watch", jp:"腕時計", enSentence:"My watch is new.", jpSentence:"私の腕時計は新しいです。"},
+{en:"time", jp:"時間", enSentence:"Time is important.", jpSentence:"時間は大切です。"},
+{en:"day", jp:"日", enSentence:"It is a good day.", jpSentence:"良い日です。"},
+{en:"night", jp:"夜", enSentence:"The night is quiet.", jpSentence:"夜は静かです。"},
+{en:"morning", jp:"朝", enSentence:"Morning comes early.", jpSentence:"朝は早く来ます。"},
+{en:"afternoon", jp:"午後", enSentence:"The afternoon is warm.", jpSentence:"午後は暖かいです。"},
+{en:"evening", jp:"夕方", enSentence:"The evening is calm.", jpSentence:"夕方は穏やかです。"},
+{en:"week", jp:"週", enSentence:"This week is busy.", jpSentence:"今週は忙しいです。"},
+{en:"month", jp:"月", enSentence:"This month is long.", jpSentence:"今月は長いです。"},
+{en:"year", jp:"年", enSentence:"This year is new.", jpSentence:"今年は新しい年です。"},
+
+{en:"today", jp:"今日", enSentence:"Today is sunny.", jpSentence:"今日は晴れです。"},
+{en:"tomorrow", jp:"明日", enSentence:"Tomorrow is free.", jpSentence:"明日は暇です。"},
+{en:"yesterday", jp:"昨日", enSentence:"Yesterday was cold.", jpSentence:"昨日は寒かったです。"},
+{en:"food", jp:"食べ物", enSentence:"The food is good.", jpSentence:"食べ物はおいしいです。"},
+{en:"water", jp:"水", enSentence:"Water is cold.", jpSentence:"水は冷たいです。"},
+{en:"rice", jp:"ご飯", enSentence:"Rice is ready.", jpSentence:"ご飯ができています。"},
+{en:"bread", jp:"パン", enSentence:"The bread is fresh.", jpSentence:"パンは新鮮です。"},
+{en:"meat", jp:"肉", enSentence:"The meat is hot.", jpSentence:"肉は熱いです。"},
+{en:"fish", jp:"魚", enSentence:"The fish is big.", jpSentence:"魚は大きいです。"},
+{en:"egg", jp:"卵", enSentence:"I eat an egg.", jpSentence:"私は卵を食べます。"},
+
+{en:"milk", jp:"牛乳", enSentence:"Milk is healthy.", jpSentence:"牛乳は健康に良いです。"},
+{en:"coffee", jp:"コーヒー", enSentence:"Coffee smells good.", jpSentence:"コーヒーはいい香りです。"},
+{en:"tea", jp:"お茶", enSentence:"Tea is hot.", jpSentence:"お茶は熱いです。"},
+{en:"sugar", jp:"砂糖", enSentence:"Sugar is sweet.", jpSentence:"砂糖は甘いです。"},
+{en:"salt", jp:"塩", enSentence:"Salt is white.", jpSentence:"塩は白いです。"},
+{en:"fruit", jp:"果物", enSentence:"Fruit is fresh.", jpSentence:"果物は新鮮です。"},
+{en:"apple", jp:"りんご", enSentence:"The apple is red.", jpSentence:"りんごは赤いです。"},
+{en:"banana", jp:"バナナ", enSentence:"The banana is yellow.", jpSentence:"バナナは黄色です。"},
+{en:"orange", jp:"オレンジ", enSentence:"The orange is sweet.", jpSentence:"オレンジは甘いです。"},
+{en:"vegetable", jp:"野菜", enSentence:"Vegetables are healthy.", jpSentence:"野菜は健康に良いです。"},
+
+{en:"salad", jp:"サラダ", enSentence:"The salad is fresh.", jpSentence:"サラダは新鮮です。"},
+{en:"soup", jp:"スープ", enSentence:"The soup is hot.", jpSentence:"スープは熱いです。"},
+{en:"cake", jp:"ケーキ", enSentence:"The cake is sweet.", jpSentence:"ケーキは甘いです。"},
+{en:"snack", jp:"おやつ", enSentence:"This snack is tasty.", jpSentence:"このおやつはおいしいです。"},
+{en:"breakfast", jp:"朝食", enSentence:"Breakfast is ready.", jpSentence:"朝食ができています。"},
+{en:"lunch", jp:"昼食", enSentence:"Lunch is cheap.", jpSentence:"昼食は安いです。"},
+{en:"dinner", jp:"夕食", enSentence:"Dinner is late.", jpSentence:"夕食は遅いです。"},
+{en:"restaurant", jp:"レストラン", enSentence:"The restaurant is busy.", jpSentence:"そのレストランは忙しいです。"},
+{en:"shop", jp:"店", enSentence:"The shop is open.", jpSentence:"その店は開いています。"},
+{en:"store", jp:"店", enSentence:"The store is big.", jpSentence:"その店は大きいです。"},
+
+{en:"market", jp:"市場", enSentence:"The market is crowded.", jpSentence:"市場は混んでいます。"},
+{en:"street", jp:"通り", enSentence:"The street is long.", jpSentence:"その通りは長いです。"},
+{en:"road", jp:"道", enSentence:"The road is wide.", jpSentence:"道は広いです。"},
+{en:"city", jp:"都市", enSentence:"The city is large.", jpSentence:"その都市は大きいです。"},
+{en:"town", jp:"町", enSentence:"The town is quiet.", jpSentence:"その町は静かです。"},
+{en:"village", jp:"村", enSentence:"The village is small.", jpSentence:"その村は小さいです。"},
+{en:"country", jp:"国", enSentence:"This country is safe.", jpSentence:"この国は安全です。"},
+{en:"place", jp:"場所", enSentence:"This place is nice.", jpSentence:"この場所は良いです。"},
+{en:"park", jp:"公園", enSentence:"The park is green.", jpSentence:"公園は緑が多いです。"},
+{en:"station", jp:"駅", enSentence:"The station is near.", jpSentence:"駅は近いです。"},
+{en:"bus", jp:"バス", enSentence:"The bus is late.", jpSentence:"バスが遅れています。"},
+{en:"train", jp:"電車", enSentence:"The train arrives soon.", jpSentence:"電車はもうすぐ到着します。"},
+{en:"car", jp:"車", enSentence:"I have a car.", jpSentence:"私は車を持っています。"},
+{en:"bike", jp:"自転車", enSentence:"This bike is new.", jpSentence:"この自転車は新しいです。"},
+{en:"taxi", jp:"タクシー", enSentence:"We take a taxi.", jpSentence:"私たちはタクシーに乗ります。"},
+
+{en:"airport", jp:"空港", enSentence:"The airport is big.", jpSentence:"空港は大きいです。"},
+{en:"ticket", jp:"チケット", enSentence:"I buy a ticket.", jpSentence:"私はチケットを買います。"},
+{en:"hotel", jp:"ホテル", enSentence:"The hotel is clean.", jpSentence:"そのホテルはきれいです。"},
+{en:"room", jp:"部屋", enSentence:"The room is quiet.", jpSentence:"部屋は静かです。"},
+{en:"keycard", jp:"キーカード", enSentence:"This keycard works.", jpSentence:"このキーカードは使えます。"},
+
+{en:"map", jp:"地図", enSentence:"I look at the map.", jpSentence:"私は地図を見ます。"},
+{en:"trip", jp:"旅行", enSentence:"The trip is fun.", jpSentence:"その旅行は楽しいです。"},
+{en:"travel", jp:"旅行", enSentence:"I like travel.", jpSentence:"私は旅行が好きです。"},
+{en:"vacation", jp:"休暇", enSentence:"My vacation starts today.", jpSentence:"私の休暇は今日始まります。"},
+{en:"beach", jp:"ビーチ", enSentence:"The beach is beautiful.", jpSentence:"そのビーチはきれいです。"},
+
+{en:"sea", jp:"海", enSentence:"The sea is blue.", jpSentence:"海は青いです。"},
+{en:"river", jp:"川", enSentence:"The river is long.", jpSentence:"その川は長いです。"},
+{en:"lake", jp:"湖", enSentence:"The lake is calm.", jpSentence:"湖は穏やかです。"},
+{en:"mountain", jp:"山", enSentence:"The mountain is high.", jpSentence:"その山は高いです。"},
+{en:"hill", jp:"丘", enSentence:"The hill is small.", jpSentence:"その丘は小さいです。"},
+
+{en:"tree", jp:"木", enSentence:"The tree is tall.", jpSentence:"その木は高いです。"},
+{en:"flower", jp:"花", enSentence:"The flower is red.", jpSentence:"その花は赤いです。"},
+{en:"grass", jp:"草", enSentence:"The grass is green.", jpSentence:"草は緑です。"},
+{en:"leaf", jp:"葉", enSentence:"The leaf falls.", jpSentence:"葉が落ちます。"},
+{en:"sky", jp:"空", enSentence:"The sky is clear.", jpSentence:"空は晴れています。"},
+
+{en:"sun", jp:"太陽", enSentence:"The sun is bright.", jpSentence:"太陽は明るいです。"},
+{en:"moon", jp:"月", enSentence:"The moon is full.", jpSentence:"月は満月です。"},
+{en:"star", jp:"星", enSentence:"The star shines.", jpSentence:"星が輝いています。"},
+{en:"cloud", jp:"雲", enSentence:"The cloud moves.", jpSentence:"雲が動きます。"},
+{en:"rain", jp:"雨", enSentence:"The rain stops.", jpSentence:"雨が止みます。"},
+
+{en:"snow", jp:"雪", enSentence:"Snow falls.", jpSentence:"雪が降ります。"},
+{en:"wind", jp:"風", enSentence:"The wind is strong.", jpSentence:"風が強いです。"},
+{en:"weather", jp:"天気", enSentence:"The weather is nice.", jpSentence:"天気が良いです。"},
+{en:"air", jp:"空気", enSentence:"The air is clean.", jpSentence:"空気はきれいです。"},
+{en:"fire", jp:"火", enSentence:"The fire is hot.", jpSentence:"火は熱いです。"},
+
+{en:"earth", jp:"地球", enSentence:"Earth is our home.", jpSentence:"地球は私たちの家です。"},
+{en:"body", jp:"体", enSentence:"The body needs rest.", jpSentence:"体には休みが必要です。"},
+{en:"head", jp:"頭", enSentence:"My head hurts.", jpSentence:"頭が痛いです。"},
+{en:"face", jp:"顔", enSentence:"Her face smiles.", jpSentence:"彼女の顔は笑っています。"},
+{en:"eye", jp:"目", enSentence:"My eye is red.", jpSentence:"私の目は赤いです。"},
+
+{en:"ear", jp:"耳", enSentence:"My ear hears well.", jpSentence:"私の耳はよく聞こえます。"},
+{en:"nose", jp:"鼻", enSentence:"My nose is cold.", jpSentence:"鼻が冷たいです。"},
+{en:"mouth", jp:"口", enSentence:"Open your mouth.", jpSentence:"口を開けてください。"},
+{en:"tooth", jp:"歯", enSentence:"This tooth hurts.", jpSentence:"この歯が痛いです。"},
+{en:"hair", jp:"髪", enSentence:"Her hair is long.", jpSentence:"彼女の髪は長いです。"},
+
+{en:"hand", jp:"手", enSentence:"Wash your hands.", jpSentence:"手を洗ってください。"},
+{en:"arm", jp:"腕", enSentence:"My arm is strong.", jpSentence:"私の腕は強いです。"},
+{en:"leg", jp:"足", enSentence:"My leg is tired.", jpSentence:"足が疲れています。"},
+{en:"foot", jp:"足", enSentence:"My foot hurts.", jpSentence:"足が痛いです。"},
+{en:"finger", jp:"指", enSentence:"This finger is small.", jpSentence:"この指は小さいです。"},
+
+{en:"heart", jp:"心臓", enSentence:"The heart beats.", jpSentence:"心臓が鼓動します。"},
+{en:"blood", jp:"血", enSentence:"Blood is red.", jpSentence:"血は赤いです。"},
+{en:"skin", jp:"肌", enSentence:"Her skin is soft.", jpSentence:"彼女の肌は柔らかいです。"},
+{en:"back", jp:"背中", enSentence:"My back hurts.", jpSentence:"背中が痛いです。"},
+{en:"stomach", jp:"お腹", enSentence:"My stomach is full.", jpSentence:"お腹がいっぱいです。"},
+
+{en:"health", jp:"健康", enSentence:"Health is important.", jpSentence:"健康は大切です。"},
+{en:"disease", jp:"病気", enSentence:"This disease spreads.", jpSentence:"この病気は広がります。"},
+{en:"medicine", jp:"薬", enSentence:"Take this medicine.", jpSentence:"この薬を飲んでください。"},
+{en:"hospital", jp:"病院", enSentence:"The hospital is near.", jpSentence:"病院は近いです。"},
+{en:"police", jp:"警察", enSentence:"The police arrive.", jpSentence:"警察が到着します。"},
+
+{en:"law", jp:"法律", enSentence:"The law is strict.", jpSentence:"法律は厳しいです。"},
+{en:"rule", jp:"規則", enSentence:"Follow the rule.", jpSentence:"規則を守ってください。"},
+{en:"money", jp:"お金", enSentence:"Money is useful.", jpSentence:"お金は役に立ちます。"},
+{en:"price", jp:"価格", enSentence:"The price is high.", jpSentence:"価格は高いです。"},
+{en:"cost", jp:"費用", enSentence:"The cost is low.", jpSentence:"費用は低いです。"},
+
+{en:"bill", jp:"請求書", enSentence:"I pay the bill.", jpSentence:"私は請求書を支払います。"},
+{en:"card", jp:"カード", enSentence:"I use a card.", jpSentence:"私はカードを使います。"},
+{en:"cash", jp:"現金", enSentence:"I pay in cash.", jpSentence:"私は現金で払います。"},
+{en:"bank", jp:"銀行", enSentence:"The bank is open.", jpSentence:"銀行は開いています。"},
+{en:"account", jp:"口座", enSentence:"I have an account.", jpSentence:"私は口座を持っています。"},
+
+{en:"company", jp:"会社", enSentence:"The company grows.", jpSentence:"その会社は成長しています。"},
+{en:"office", jp:"オフィス", enSentence:"The office is quiet.", jpSentence:"オフィスは静かです。"},
+{en:"meeting", jp:"会議", enSentence:"The meeting starts.", jpSentence:"会議が始まります。"},
+{en:"team", jp:"チーム", enSentence:"The team wins.", jpSentence:"チームが勝ちます。"},
+{en:"project", jp:"プロジェクト", enSentence:"The project ends.", jpSentence:"プロジェクトが終わります。"},
+
+{en:"plan", jp:"計画", enSentence:"The plan works.", jpSentence:"その計画はうまくいきます。"},
+{en:"idea", jp:"アイデア", enSentence:"This idea is good.", jpSentence:"このアイデアは良いです。"},
+{en:"problem", jp:"問題", enSentence:"We solve the problem.", jpSentence:"私たちは問題を解決します。"},
+{en:"answer", jp:"答え", enSentence:"The answer is right.", jpSentence:"答えは正しいです。"},
+{en:"question", jp:"質問", enSentence:"I have a question.", jpSentence:"質問があります。"},
+
+{en:"example", jp:"例", enSentence:"This is an example.", jpSentence:"これは例です。"},
+{en:"test", jp:"テスト", enSentence:"The test is easy.", jpSentence:"テストは簡単です。"},
+{en:"result", jp:"結果", enSentence:"The result is good.", jpSentence:"結果は良いです。"},
+{en:"score", jp:"点数", enSentence:"My score is high.", jpSentence:"私の点数は高いです。"},
+{en:"level", jp:"レベル", enSentence:"This level is hard.", jpSentence:"このレベルは難しいです。"},
+
+{en:"skill", jp:"スキル", enSentence:"This skill helps.", jpSentence:"このスキルは役立ちます。"},
+{en:"language", jp:"言語", enSentence:"English is a language.", jpSentence:"英語は言語です。"},
+{en:"word", jp:"単語", enSentence:"This word is common.", jpSentence:"この単語はよく使われます。"},
+{en:"sentence", jp:"文", enSentence:"This sentence is short.", jpSentence:"この文は短いです。"},
+{en:"meaning", jp:"意味", enSentence:"The meaning is clear.", jpSentence:"意味は明確です。"},
+
+{en:"sound", jp:"音", enSentence:"The sound is loud.", jpSentence:"音が大きいです。"},
+{en:"voice", jp:"声", enSentence:"Her voice is soft.", jpSentence:"彼女の声は柔らかいです。"},
+{en:"music", jp:"音楽", enSentence:"I like music.", jpSentence:"私は音楽が好きです。"},
+{en:"song", jp:"歌", enSentence:"This song is popular.", jpSentence:"この歌は人気です。"},
+{en:"movie", jp:"映画", enSentence:"The movie is fun.", jpSentence:"その映画は楽しいです。"},
+
+{en:"video", jp:"動画", enSentence:"This video is short.", jpSentence:"この動画は短いです。"},
+{en:"game", jp:"ゲーム", enSentence:"The game is exciting.", jpSentence:"そのゲームは楽しいです。"},
+{en:"sport", jp:"スポーツ", enSentence:"Sport is healthy.", jpSentence:"スポーツは健康に良いです。"},
+{en:"ball", jp:"ボール", enSentence:"The ball is round.", jpSentence:"ボールは丸いです。"},
+{en:"match", jp:"試合", enSentence:"The match starts.", jpSentence:"試合が始まります。"},
+{en:"player", jp:"選手", enSentence:"The player runs fast.", jpSentence:"その選手は速く走ります。"},
+{en:"coach", jp:"コーチ", enSentence:"The coach teaches us.", jpSentence:"コーチは私たちを指導します。"},
+{en:"fan", jp:"ファン", enSentence:"I am a fan of soccer.", jpSentence:"私はサッカーのファンです。"},
+{en:"goal", jp:"ゴール", enSentence:"He scores a goal.", jpSentence:"彼はゴールを決めます。"},
+{en:"win", jp:"勝利", enSentence:"The win makes us happy.", jpSentence:"その勝利は私たちを幸せにします。"},
+
+{en:"loss", jp:"敗北", enSentence:"The loss is sad.", jpSentence:"その敗北は残念です。"},
+{en:"draw", jp:"引き分け", enSentence:"The game ends in a draw.", jpSentence:"試合は引き分けで終わります。"},
+{en:"exercise", jp:"運動", enSentence:"Exercise is important.", jpSentence:"運動は大切です。"},
+{en:"gym", jp:"ジム", enSentence:"I go to the gym.", jpSentence:"私はジムに行きます。"},
+{en:"walk", jp:"散歩", enSentence:"I take a walk.", jpSentence:"私は散歩をします。"},
+
+{en:"run", jp:"ランニング", enSentence:"A run feels good.", jpSentence:"走ると気持ちいいです。"},
+{en:"jump", jp:"ジャンプ", enSentence:"The jump is high.", jpSentence:"そのジャンプは高いです。"},
+{en:"swim", jp:"水泳", enSentence:"Swim is my hobby.", jpSentence:"水泳は私の趣味です。"},
+{en:"sleep", jp:"睡眠", enSentence:"Sleep is important.", jpSentence:"睡眠は大切です。"},
+{en:"dream", jp:"夢", enSentence:"I have a dream.", jpSentence:"私には夢があります。"},
+
+{en:"rest", jp:"休息", enSentence:"Rest helps the body.", jpSentence:"休息は体を助けます。"},
+{en:"hobby", jp:"趣味", enSentence:"Music is my hobby.", jpSentence:"音楽は私の趣味です。"},
+{en:"hobbyist", jp:"愛好家", enSentence:"He is a hobbyist.", jpSentence:"彼は趣味を楽しむ人です。"},
+{en:"art", jp:"芸術", enSentence:"Art is beautiful.", jpSentence:"芸術は美しいです。"},
+{en:"picture", jp:"絵", enSentence:"The picture is nice.", jpSentence:"その絵は素敵です。"},
+
+{en:"photo", jp:"写真", enSentence:"This photo is old.", jpSentence:"この写真は古いです。"},
+{en:"camera", jp:"カメラ", enSentence:"The camera is new.", jpSentence:"そのカメラは新しいです。"},
+{en:"color", jp:"色", enSentence:"I like this color.", jpSentence:"私はこの色が好きです。"},
+{en:"red", jp:"赤", enSentence:"Red is bright.", jpSentence:"赤は明るい色です。"},
+{en:"blue", jp:"青", enSentence:"Blue is calm.", jpSentence:"青は落ち着いた色です。"},
+
+{en:"green", jp:"緑", enSentence:"Green is natural.", jpSentence:"緑は自然な色です。"},
+{en:"yellow", jp:"黄色", enSentence:"Yellow is bright.", jpSentence:"黄色は明るいです。"},
+{en:"black", jp:"黒", enSentence:"Black is simple.", jpSentence:"黒はシンプルです。"},
+{en:"white", jp:"白", enSentence:"White is clean.", jpSentence:"白は清潔な色です。"},
+{en:"brown", jp:"茶色", enSentence:"Brown is warm.", jpSentence:"茶色は暖かい色です。"},
+
+{en:"shape", jp:"形", enSentence:"The shape is round.", jpSentence:"形は丸いです。"},
+{en:"size", jp:"大きさ", enSentence:"The size is small.", jpSentence:"大きさは小さいです。"},
+{en:"number", jp:"数", enSentence:"The number is high.", jpSentence:"数は多いです。"},
+{en:"one", jp:"1", enSentence:"One is enough.", jpSentence:"1つで十分です。"},
+{en:"two", jp:"2", enSentence:"Two are here.", jpSentence:"2つあります。"},
+
+{en:"three", jp:"3", enSentence:"Three people come.", jpSentence:"3人来ます。"},
+{en:"four", jp:"4", enSentence:"Four seats are free.", jpSentence:"4席空いています。"},
+{en:"five", jp:"5", enSentence:"Five minutes left.", jpSentence:"あと5分です。"},
+{en:"ten", jp:"10", enSentence:"Ten days pass.", jpSentence:"10日が過ぎます。"},
+{en:"hundred", jp:"100", enSentence:"One hundred people came.", jpSentence:"100人来ました。"},
+
+{en:"many", jp:"多くの", enSentence:"Many people agree.", jpSentence:"多くの人が賛成します。"},
+{en:"few", jp:"少しの", enSentence:"Few people know.", jpSentence:"知っている人は少ないです。"},
+{en:"all", jp:"すべて", enSentence:"All are ready.", jpSentence:"すべて準備できています。"},
+{en:"part", jp:"部分", enSentence:"This part is broken.", jpSentence:"この部分は壊れています。"},
+{en:"group", jp:"グループ", enSentence:"The group meets.", jpSentence:"グループが集まります。"},
+
+{en:"type", jp:"種類", enSentence:"This type is common.", jpSentence:"この種類は一般的です。"},
+{en:"kind", jp:"種類", enSentence:"What kind is this?", jpSentence:"これはどんな種類ですか。"},
+{en:"fact", jp:"事実", enSentence:"This is a fact.", jpSentence:"これは事実です。"},
+{en:"news", jp:"ニュース", enSentence:"The news is shocking.", jpSentence:"そのニュースは衝撃的です。"},
+{en:"story", jp:"物語", enSentence:"The story is long.", jpSentence:"その物語は長いです。"},
+
+{en:"history", jp:"歴史", enSentence:"History is interesting.", jpSentence:"歴史は面白いです。"},
+{en:"culture", jp:"文化", enSentence:"Culture is different.", jpSentence:"文化は違います。"},
+{en:"society", jp:"社会", enSentence:"Society changes.", jpSentence:"社会は変化します。"},
+{en:"world", jp:"世界", enSentence:"The world is wide.", jpSentence:"世界は広いです。"},
+{en:"life", jp:"人生", enSentence:"Life is precious.", jpSentence:"人生は大切です。"},
+
+{en:"death", jp:"死", enSentence:"Death is sad.", jpSentence:"死は悲しいものです。"},
+{en:"birth", jp:"誕生", enSentence:"Birth brings joy.", jpSentence:"誕生は喜びをもたらします。"},
+{en:"age", jp:"年齢", enSentence:"My age is 20.", jpSentence:"私の年齢は20歳です。"},
+{en:"child", jp:"子ども", enSentence:"The child plays.", jpSentence:"その子どもは遊びます。"},
+{en:"adult", jp:"大人", enSentence:"Adults work.", jpSentence:"大人は働きます。"},
+
+{en:"parent", jp:"親", enSentence:"Parents care.", jpSentence:"親は世話をします。"},
+{en:"couple", jp:"カップル", enSentence:"The couple smiles.", jpSentence:"そのカップルは微笑みます。"},
+{en:"family", jp:"家族", enSentence:"Family matters.", jpSentence:"家族は大切です。"},
+{en:"friend", jp:"友達", enSentence:"Friends help.", jpSentence:"友達は助けます。"},
+{en:"neighbor", jp:"隣人", enSentence:"The neighbor waves.", jpSentence:"隣人が手を振ります。"},
+
+{en:"guest", jp:"客", enSentence:"The guest arrives.", jpSentence:"客が到着します。"},
+{en:"host", jp:"主催者", enSentence:"The host welcomes us.", jpSentence:"主催者が歓迎します。"},
+{en:"customer", jp:"顧客", enSentence:"The customer waits.", jpSentence:"顧客が待っています。"},
+{en:"client", jp:"取引先", enSentence:"The client agrees.", jpSentence:"取引先が同意します。"},
+{en:"user", jp:"利用者", enSentence:"The user logs in.", jpSentence:"利用者がログインします。"},
+
+{en:"member", jp:"メンバー", enSentence:"I am a member.", jpSentence:"私はメンバーです。"},
+{en:"leader", jp:"リーダー", enSentence:"The leader speaks.", jpSentence:"リーダーが話します。"},
+{en:"manager", jp:"管理者", enSentence:"The manager decides.", jpSentence:"管理者が決定します。"},
+{en:"owner", jp:"所有者", enSentence:"The owner agrees.", jpSentence:"所有者が同意します。"},
+{en:"driver", jp:"運転手", enSentence:"The driver stops.", jpSentence:"運転手が止まります。"},
+
+{en:"rider", jp:"乗る人", enSentence:"The rider waits.", jpSentence:"乗る人が待っています。"},
+{en:"visitor", jp:"訪問者", enSentence:"Visitors come.", jpSentence:"訪問者が来ます。"},
+{en:"tourist", jp:"観光客", enSentence:"Tourists enjoy it.", jpSentence:"観光客は楽しみます。"},
+{en:"guide", jp:"案内人", enSentence:"The guide explains.", jpSentence:"案内人が説明します。"},
+{en:"seller", jp:"売り手", enSentence:"The seller smiles.", jpSentence:"売り手は微笑みます。"},
+
+{en:"buyer", jp:"買い手", enSentence:"The buyer pays.", jpSentence:"買い手が支払います。"},
+{en:"worker", jp:"労働者", enSentence:"Workers rest.", jpSentence:"労働者は休みます。"},
+{en:"staff", jp:"スタッフ", enSentence:"The staff helps.", jpSentence:"スタッフが助けます。"},
+{en:"employee", jp:"従業員", enSentence:"Employees work.", jpSentence:"従業員は働きます。"},
+{en:"boss", jp:"上司", enSentence:"The boss decides.", jpSentence:"上司が決めます。"},
+
+{en:"chief", jp:"長", enSentence:"The chief leads.", jpSentence:"長が導きます。"},
+{en:"king", jp:"王", enSentence:"The king rules.", jpSentence:"王が治めます。"},
+{en:"queen", jp:"女王", enSentence:"The queen smiles.", jpSentence:"女王が微笑みます。"},
+{en:"president", jp:"大統領", enSentence:"The president speaks.", jpSentence:"大統領が演説します。"},
+{en:"government", jp:"政府", enSentence:"The government acts.", jpSentence:"政府が行動します。"},
+
+{en:"state", jp:"国家", enSentence:"The state changes.", jpSentence:"国家が変化します。"},
+{en:"nation", jp:"国民", enSentence:"The nation grows.", jpSentence:"国は成長します。"},
+{en:"power", jp:"力", enSentence:"Power is strong.", jpSentence:"力は強いです。"},
+{en:"energy", jp:"エネルギー", enSentence:"Energy is needed.", jpSentence:"エネルギーが必要です。"},
+{en:"force", jp:"力", enSentence:"Force moves things.", jpSentence:"力は物を動かします。"},
+
+{en:"system", jp:"仕組み", enSentence:"The system works.", jpSentence:"仕組みは動きます。"},
+{en:"network", jp:"ネットワーク", enSentence:"The network is fast.", jpSentence:"ネットワークは速いです。"},
+{en:"internet", jp:"インターネット", enSentence:"The internet connects us.", jpSentence:"インターネットは私たちをつなぎます。"},
+{en:"website", jp:"ウェブサイト", enSentence:"The website loads.", jpSentence:"ウェブサイトが読み込まれます。"},
+{en:"page", jp:"ページ", enSentence:"Open the page.", jpSentence:"ページを開いてください。"},
+{en:"link", jp:"リンク", enSentence:"Click the link.", jpSentence:"リンクをクリックしてください。"},
+{en:"app", jp:"アプリ", enSentence:"This app is useful.", jpSentence:"このアプリは便利です。"},
+{en:"software", jp:"ソフトウェア", enSentence:"The software works well.", jpSentence:"そのソフトウェアはよく動きます。"},
+{en:"program", jp:"プログラム", enSentence:"The program starts.", jpSentence:"プログラムが起動します。"},
+{en:"data", jp:"データ", enSentence:"The data is safe.", jpSentence:"データは安全です。"},
+
+{en:"file", jp:"ファイル", enSentence:"Open the file.", jpSentence:"ファイルを開いてください。"},
+{en:"folder", jp:"フォルダ", enSentence:"The folder is empty.", jpSentence:"フォルダは空です。"},
+{en:"server", jp:"サーバー", enSentence:"The server is down.", jpSentence:"サーバーが停止しています。"},
+{en:"cloud", jp:"クラウド", enSentence:"Data is on the cloud.", jpSentence:"データはクラウド上にあります。"},
+{en:"password", jp:"パスワード", enSentence:"Change your password.", jpSentence:"パスワードを変更してください。"},
+
+{en:"account", jp:"アカウント", enSentence:"I have an account.", jpSentence:"私はアカウントを持っています。"},
+{en:"profile", jp:"プロフィール", enSentence:"Edit your profile.", jpSentence:"プロフィールを編集してください。"},
+{en:"message", jp:"メッセージ", enSentence:"I get a message.", jpSentence:"メッセージが届きます。"},
+{en:"email", jp:"メール", enSentence:"Send an email.", jpSentence:"メールを送ってください。"},
+{en:"call", jp:"通話", enSentence:"I get a call.", jpSentence:"電話がかかってきます。"},
+
+{en:"text", jp:"メッセージ", enSentence:"I send a text.", jpSentence:"メッセージを送ります。"},
+{en:"chat", jp:"チャット", enSentence:"We use chat.", jpSentence:"私たちはチャットを使います。"},
+{en:"post", jp:"投稿", enSentence:"This post is popular.", jpSentence:"この投稿は人気です。"},
+{en:"comment", jp:"コメント", enSentence:"Leave a comment.", jpSentence:"コメントを残してください。"},
+{en:"like", jp:"いいね", enSentence:"I get many likes.", jpSentence:"たくさんのいいねをもらいます。"},
+
+{en:"share", jp:"共有", enSentence:"Share the photo.", jpSentence:"写真を共有してください。"},
+{en:"photo", jp:"写真", enSentence:"This photo is clear.", jpSentence:"この写真は鮮明です。"},
+{en:"video", jp:"動画", enSentence:"The video plays.", jpSentence:"動画が再生されます。"},
+{en:"stream", jp:"配信", enSentence:"The stream starts.", jpSentence:"配信が始まります。"},
+{en:"channel", jp:"チャンネル", enSentence:"This channel grows.", jpSentence:"このチャンネルは成長しています。"},
+
+{en:"media", jp:"メディア", enSentence:"Media changes fast.", jpSentence:"メディアは早く変化します。"},
+{en:"news", jp:"ニュース", enSentence:"The news spreads.", jpSentence:"ニュースが広まります。"},
+{en:"report", jp:"報告", enSentence:"Read the report.", jpSentence:"報告を読んでください。"},
+{en:"article", jp:"記事", enSentence:"The article is long.", jpSentence:"その記事は長いです。"},
+{en:"blog", jp:"ブログ", enSentence:"I read a blog.", jpSentence:"私はブログを読みます。"},
+
+{en:"title", jp:"タイトル", enSentence:"The title is clear.", jpSentence:"タイトルは分かりやすいです。"},
+{en:"topic", jp:"話題", enSentence:"This topic is popular.", jpSentence:"この話題は人気です。"},
+{en:"theme", jp:"テーマ", enSentence:"The theme is simple.", jpSentence:"テーマはシンプルです。"},
+{en:"detail", jp:"詳細", enSentence:"Check the detail.", jpSentence:"詳細を確認してください。"},
+{en:"point", jp:"要点", enSentence:"This is the point.", jpSentence:"これが要点です。"},
+
+{en:"reason", jp:"理由", enSentence:"There is a reason.", jpSentence:"理由があります。"},
+{en:"cause", jp:"原因", enSentence:"Find the cause.", jpSentence:"原因を見つけてください。"},
+{en:"effect", jp:"効果", enSentence:"The effect is strong.", jpSentence:"効果は大きいです。"},
+{en:"change", jp:"変化", enSentence:"Change is fast.", jpSentence:"変化は早いです。"},
+{en:"growth", jp:"成長", enSentence:"Growth is steady.", jpSentence:"成長は安定しています。"},
+
+{en:"progress", jp:"進歩", enSentence:"Progress is slow.", jpSentence:"進歩は遅いです。"},
+{en:"success", jp:"成功", enSentence:"Success takes time.", jpSentence:"成功には時間がかかります。"},
+{en:"failure", jp:"失敗", enSentence:"Failure teaches us.", jpSentence:"失敗は私たちに教えます。"},
+{en:"chance", jp:"機会", enSentence:"This is a chance.", jpSentence:"これはチャンスです。"},
+{en:"risk", jp:"リスク", enSentence:"There is a risk.", jpSentence:"リスクがあります。"},
+
+{en:"choice", jp:"選択", enSentence:"Make a choice.", jpSentence:"選択してください。"},
+{en:"option", jp:"選択肢", enSentence:"Choose an option.", jpSentence:"選択肢を選んでください。"},
+{en:"decision", jp:"決定", enSentence:"The decision is final.", jpSentence:"その決定は最終です。"},
+{en:"control", jp:"管理", enSentence:"Control is important.", jpSentence:"管理は重要です。"},
+{en:"limit", jp:"限界", enSentence:"There is a limit.", jpSentence:"限界があります。"},
+
+{en:"rule", jp:"規則", enSentence:"Follow the rule.", jpSentence:"規則を守ってください。"},
+{en:"order", jp:"順序", enSentence:"Keep the order.", jpSentence:"順序を守ってください。"},
+{en:"line", jp:"列", enSentence:"Stand in line.", jpSentence:"列に並んでください。"},
+{en:"row", jp:"行", enSentence:"This row is empty.", jpSentence:"この行は空です。"},
+{en:"column", jp:"列", enSentence:"Read the column.", jpSentence:"列を読んでください。"},
+
+{en:"list", jp:"リスト", enSentence:"Make a list.", jpSentence:"リストを作ってください。"},
+{en:"menu", jp:"メニュー", enSentence:"Check the menu.", jpSentence:"メニューを確認してください。"},
+{en:"button", jp:"ボタン", enSentence:"Press the button.", jpSentence:"ボタンを押してください。"},
+{en:"icon", jp:"アイコン", enSentence:"Tap the icon.", jpSentence:"アイコンをタップしてください。"},
+{en:"image", jp:"画像", enSentence:"The image loads.", jpSentence:"画像が表示されます。"},
+
+{en:"design", jp:"デザイン", enSentence:"The design is clean.", jpSentence:"デザインはすっきりしています。"},
+{en:"style", jp:"スタイル", enSentence:"I like this style.", jpSentence:"このスタイルが好きです。"},
+{en:"model", jp:"モデル", enSentence:"This model is new.", jpSentence:"このモデルは新しいです。"},
+{en:"pattern", jp:"型", enSentence:"The pattern repeats.", jpSentence:"型が繰り返されます。"},
+{en:"form", jp:"形", enSentence:"Fill out the form.", jpSentence:"フォームに記入してください。"},
+
+{en:"shape", jp:"形状", enSentence:"The shape is simple.", jpSentence:"形状はシンプルです。"},
+{en:"structure", jp:"構造", enSentence:"The structure is strong.", jpSentence:"構造は頑丈です。"},
+{en:"level", jp:"レベル", enSentence:"This level is easy.", jpSentence:"このレベルは簡単です。"},
+{en:"rank", jp:"順位", enSentence:"His rank is high.", jpSentence:"彼の順位は高いです。"},
+{en:"grade", jp:"成績", enSentence:"My grade improves.", jpSentence:"成績が向上します。"},
+
+{en:"score", jp:"点数", enSentence:"The score is low.", jpSentence:"点数は低いです。"},
+{en:"test", jp:"テスト", enSentence:"The test ends.", jpSentence:"テストが終わります。"},
+{en:"exam", jp:"試験", enSentence:"The exam is hard.", jpSentence:"試験は難しいです。"},
+{en:"class", jp:"授業", enSentence:"The class begins.", jpSentence:"授業が始まります。"},
+{en:"lesson", jp:"レッスン", enSentence:"The lesson helps.", jpSentence:"そのレッスンは役立ちます。"},
+
+{en:"course", jp:"コース", enSentence:"This course is popular.", jpSentence:"このコースは人気です。"},
+{en:"study", jp:"勉強", enSentence:"Study is important.", jpSentence:"勉強は大切です。"},
+{en:"practice", jp:"練習", enSentence:"Practice makes progress.", jpSentence:"練習は上達につながります。"},
+{en:"skill", jp:"技能", enSentence:"This skill matters.", jpSentence:"この技能は重要です。"},
+{en:"knowledge", jp:"知識", enSentence:"Knowledge grows.", jpSentence:"知識は増えます。"},
+
+{en:"idea", jp:"考え", enSentence:"The idea works.", jpSentence:"その考えはうまくいきます。"},
+{en:"thought", jp:"考え", enSentence:"This thought stays.", jpSentence:"この考えは残ります。"},
+{en:"mind", jp:"心", enSentence:"Keep an open mind.", jpSentence:"広い心を持ってください。"},
+{en:"brain", jp:"脳", enSentence:"The brain learns.", jpSentence:"脳は学習します。"},
+{en:"memory", jp:"記憶", enSentence:"Memory fades.", jpSentence:"記憶は薄れます。"},
+
+{en:"focus", jp:"集中", enSentence:"Focus improves work.", jpSentence:"集中は仕事を良くします。"},
+{en:"attention", jp:"注意", enSentence:"Pay attention.", jpSentence:"注意してください。"},
+{en:"emotion", jp:"感情", enSentence:"Emotion changes.", jpSentence:"感情は変化します。"},
+{en:"feeling", jp:"気持ち", enSentence:"I share my feelings.", jpSentence:"気持ちを共有します。"},
+{en:"love", jp:"愛", enSentence:"Love is strong.", jpSentence:"愛は強いです。"},
+
+{en:"hate", jp:"憎しみ", enSentence:"Hate causes pain.", jpSentence:"憎しみは苦しみを生みます。"},
+{en:"fear", jp:"恐れ", enSentence:"Fear disappears.", jpSentence:"恐れは消えます。"},
+{en:"joy", jp:"喜び", enSentence:"Joy fills us.", jpSentence:"喜びが満たします。"},
+{en:"anger", jp:"怒り", enSentence:"Anger fades.", jpSentence:"怒りは収まります。"},
+{en:"stress", jp:"ストレス", enSentence:"Stress affects health.", jpSentence:"ストレスは健康に影響します。"},
+
+{en:"peace", jp:"平和", enSentence:"Peace matters.", jpSentence:"平和は大切です。"},
+{en:"hope", jp:"希望", enSentence:"Hope remains.", jpSentence:"希望は残ります。"},
+{en:"dream", jp:"夢", enSentence:"Dreams inspire us.", jpSentence:"夢は私たちを鼓舞します。"},
+{en:"goal", jp:"目標", enSentence:"The goal is clear.", jpSentence:"目標は明確です。"},
+{en:"plan", jp:"計画", enSentence:"The plan succeeds.", jpSentence:"計画は成功します。"},
+{en:"future", jp:"未来", enSentence:"The future is bright.", jpSentence:"未来は明るいです。"},
+{en:"past", jp:"過去", enSentence:"The past is gone.", jpSentence:"過去は過ぎ去りました。"},
+{en:"present", jp:"現在", enSentence:"The present matters.", jpSentence:"現在が大切です。"},
+{en:"moment", jp:"瞬間", enSentence:"This moment is special.", jpSentence:"この瞬間は特別です。"},
+{en:"time", jp:"時間", enSentence:"Time is limited.", jpSentence:"時間は限られています。"},
+
+{en:"speed", jp:"速度", enSentence:"The speed is high.", jpSentence:"速度は速いです。"},
+{en:"rate", jp:"割合", enSentence:"The rate increases.", jpSentence:"割合が上がります。"},
+{en:"value", jp:"価値", enSentence:"This has value.", jpSentence:"これは価値があります。"},
+{en:"quality", jp:"品質", enSentence:"The quality is good.", jpSentence:"品質は良いです。"},
+{en:"service", jp:"サービス", enSentence:"The service is helpful.", jpSentence:"サービスは役立ちます。"},
+
+{en:"product", jp:"製品", enSentence:"This product sells well.", jpSentence:"この製品はよく売れます。"},
+{en:"item", jp:"商品", enSentence:"This item is cheap.", jpSentence:"この商品は安いです。"},
+{en:"tool", jp:"道具", enSentence:"This tool helps.", jpSentence:"この道具は役立ちます。"},
+{en:"device", jp:"装置", enSentence:"The device works.", jpSentence:"その装置は動きます。"},
+{en:"machine", jp:"機械", enSentence:"The machine stops.", jpSentence:"機械が止まります。"},
+
+{en:"engine", jp:"エンジン", enSentence:"The engine runs.", jpSentence:"エンジンが動きます。"},
+{en:"power", jp:"力", enSentence:"Power is needed.", jpSentence:"力が必要です。"},
+{en:"battery", jp:"バッテリー", enSentence:"The battery is low.", jpSentence:"バッテリーが少ないです。"},
+{en:"cable", jp:"ケーブル", enSentence:"The cable connects.", jpSentence:"ケーブルが接続します。"},
+{en:"wire", jp:"電線", enSentence:"The wire breaks.", jpSentence:"電線が切れます。"},
+
+{en:"plug", jp:"プラグ", enSentence:"Insert the plug.", jpSentence:"プラグを差し込んでください。"},
+{en:"switch", jp:"スイッチ", enSentence:"Turn the switch on.", jpSentence:"スイッチを入れてください。"},
+{en:"screen", jp:"画面", enSentence:"The screen is bright.", jpSentence:"画面は明るいです。"},
+{en:"display", jp:"表示", enSentence:"The display shows data.", jpSentence:"表示がデータを示します。"},
+{en:"light", jp:"光", enSentence:"The light is strong.", jpSentence:"光が強いです。"},
+
+{en:"sound", jp:"音", enSentence:"The sound is clear.", jpSentence:"音ははっきりしています。"},
+{en:"noise", jp:"騒音", enSentence:"The noise is loud.", jpSentence:"騒音が大きいです。"},
+{en:"signal", jp:"信号", enSentence:"The signal is weak.", jpSentence:"信号が弱いです。"},
+{en:"sign", jp:"標識", enSentence:"Read the sign.", jpSentence:"標識を読んでください。"},
+{en:"mark", jp:"印", enSentence:"Leave a mark.", jpSentence:"印を残してください。"},
+
+{en:"symbol", jp:"象徴", enSentence:"This is a symbol.", jpSentence:"これは象徴です。"},
+{en:"code", jp:"コード", enSentence:"The code works.", jpSentence:"コードは動きます。"},
+{en:"rule", jp:"規則", enSentence:"Follow the rule.", jpSentence:"規則を守ってください。"},
+{en:"law", jp:"法律", enSentence:"The law protects us.", jpSentence:"法律は私たちを守ります。"},
+{en:"right", jp:"権利", enSentence:"Everyone has rights.", jpSentence:"誰にでも権利があります。"},
+
+{en:"duty", jp:"義務", enSentence:"Duty comes first.", jpSentence:"義務が最優先です。"},
+{en:"freedom", jp:"自由", enSentence:"Freedom matters.", jpSentence:"自由は大切です。"},
+{en:"safety", jp:"安全", enSentence:"Safety comes first.", jpSentence:"安全第一です。"},
+{en:"danger", jp:"危険", enSentence:"There is danger.", jpSentence:"危険があります。"},
+{en:"accident", jp:"事故", enSentence:"An accident happens.", jpSentence:"事故が起こります。"},
+
+{en:"risk", jp:"リスク", enSentence:"This has risk.", jpSentence:"これはリスクがあります。"},
+{en:"problem", jp:"問題", enSentence:"We solve the problem.", jpSentence:"私たちは問題を解決します。"},
+{en:"issue", jp:"課題", enSentence:"This issue matters.", jpSentence:"この課題は重要です。"},
+{en:"case", jp:"事例", enSentence:"This case is special.", jpSentence:"この事例は特別です。"},
+{en:"example", jp:"例", enSentence:"Here is an example.", jpSentence:"ここに例があります。"},
+
+{en:"sample", jp:"見本", enSentence:"This sample works.", jpSentence:"この見本は使えます。"},
+{en:"test", jp:"試験", enSentence:"The test ends.", jpSentence:"試験が終わります。"},
+{en:"result", jp:"結果", enSentence:"The result is clear.", jpSentence:"結果は明確です。"},
+{en:"effect", jp:"効果", enSentence:"The effect lasts.", jpSentence:"効果が続きます。"},
+{en:"impact", jp:"影響", enSentence:"The impact is big.", jpSentence:"影響は大きいです。"},
+
+{en:"change", jp:"変化", enSentence:"Change happens.", jpSentence:"変化が起こります。"},
+{en:"trend", jp:"傾向", enSentence:"This trend grows.", jpSentence:"この傾向は伸びています。"},
+{en:"market", jp:"市場", enSentence:"The market moves.", jpSentence:"市場が動きます。"},
+{en:"price", jp:"価格", enSentence:"The price rises.", jpSentence:"価格が上がります。"},
+{en:"cost", jp:"費用", enSentence:"The cost drops.", jpSentence:"費用が下がります。"},
+
+{en:"value", jp:"価値", enSentence:"This adds value.", jpSentence:"これは価値を高めます。"},
+{en:"profit", jp:"利益", enSentence:"The profit grows.", jpSentence:"利益が増えます。"},
+{en:"loss", jp:"損失", enSentence:"The loss is large.", jpSentence:"損失は大きいです。"},
+{en:"income", jp:"収入", enSentence:"Income increases.", jpSentence:"収入が増えます。"},
+{en:"salary", jp:"給料", enSentence:"The salary rises.", jpSentence:"給料が上がります。"},
+
+{en:"wage", jp:"賃金", enSentence:"The wage is fair.", jpSentence:"賃金は公平です。"},
+{en:"budget", jp:"予算", enSentence:"The budget is limited.", jpSentence:"予算は限られています。"},
+{en:"tax", jp:"税金", enSentence:"Tax is required.", jpSentence:"税金が必要です。"},
+{en:"fee", jp:"手数料", enSentence:"The fee is small.", jpSentence:"手数料は少額です。"},
+{en:"rent", jp:"家賃", enSentence:"The rent is high.", jpSentence:"家賃は高いです。"},
+
+{en:"loan", jp:"ローン", enSentence:"I take a loan.", jpSentence:"私はローンを組みます。"},
+{en:"debt", jp:"借金", enSentence:"Debt decreases.", jpSentence:"借金が減ります。"},
+{en:"bill", jp:"請求書", enSentence:"Pay the bill.", jpSentence:"請求書を支払ってください。"},
+{en:"receipt", jp:"領収書", enSentence:"Keep the receipt.", jpSentence:"領収書を保管してください。"},
+{en:"contract", jp:"契約", enSentence:"The contract ends.", jpSentence:"契約が終了します。"},
+
+{en:"deal", jp:"取引", enSentence:"The deal succeeds.", jpSentence:"取引は成功します。"},
+{en:"trade", jp:"貿易", enSentence:"Trade expands.", jpSentence:"貿易が拡大します。"},
+{en:"business", jp:"ビジネス", enSentence:"Business grows.", jpSentence:"ビジネスが成長します。"},
+{en:"industry", jp:"産業", enSentence:"Industry changes.", jpSentence:"産業は変化します。"},
+{en:"company", jp:"会社", enSentence:"The company hires staff.", jpSentence:"会社は人を雇います。"},
+
+{en:"brand", jp:"ブランド", enSentence:"This brand is famous.", jpSentence:"このブランドは有名です。"},
+{en:"product", jp:"製品", enSentence:"The product improves.", jpSentence:"製品が改善されます。"},
+{en:"service", jp:"サービス", enSentence:"Service matters.", jpSentence:"サービスは重要です。"},
+{en:"customer", jp:"顧客", enSentence:"Customers wait.", jpSentence:"顧客が待っています。"},
+{en:"user", jp:"利用者", enSentence:"Users log in.", jpSentence:"利用者がログインします。"},
+
+{en:"client", jp:"取引先", enSentence:"The client agrees.", jpSentence:"取引先が同意します。"},
+{en:"partner", jp:"パートナー", enSentence:"Partners cooperate.", jpSentence:"パートナーが協力します。"},
+{en:"team", jp:"チーム", enSentence:"The team works.", jpSentence:"チームが働きます。"},
+{en:"group", jp:"集団", enSentence:"The group meets.", jpSentence:"集団が集まります。"},
+{en:"community", jp:"共同体", enSentence:"The community helps.", jpSentence:"地域社会が助けます。"},
+
+{en:"society", jp:"社会", enSentence:"Society changes.", jpSentence:"社会は変化します。"},
+{en:"culture", jp:"文化", enSentence:"Culture evolves.", jpSentence:"文化は進化します。"},
+{en:"tradition", jp:"伝統", enSentence:"Tradition continues.", jpSentence:"伝統は続きます。"},
+{en:"custom", jp:"慣習", enSentence:"Custom differs.", jpSentence:"慣習は異なります。"},
+{en:"habit", jp:"習慣", enSentence:"Habit forms slowly.", jpSentence:"習慣はゆっくり身につきます。"},
+
+{en:"lifestyle", jp:"生活様式", enSentence:"Lifestyle affects health.", jpSentence:"生活様式は健康に影響します。"},
+{en:"daily", jp:"日常", enSentence:"Daily life changes.", jpSentence:"日常生活は変化します。"},
+{en:"routine", jp:"日課", enSentence:"Routine helps focus.", jpSentence:"日課は集中を助けます。"},
+{en:"activity", jp:"活動", enSentence:"The activity ends.", jpSentence:"活動が終わります。"},
+{en:"action", jp:"行動", enSentence:"Action matters.", jpSentence:"行動が大切です。"},
+
+{en:"behavior", jp:"行動", enSentence:"Behavior changes.", jpSentence:"行動が変わります。"},
+{en:"manner", jp:"態度", enSentence:"Good manner matters.", jpSentence:"良い態度は大切です。"},
+{en:"way", jp:"方法", enSentence:"This way works.", jpSentence:"この方法はうまくいきます。"},
+{en:"method", jp:"方法", enSentence:"Use this method.", jpSentence:"この方法を使ってください。"},
+{en:"process", jp:"過程", enSentence:"The process continues.", jpSentence:"過程は続きます。"},
+{en:"step", jp:"段階", enSentence:"This is the first step.", jpSentence:"これは最初の段階です。"},
+{en:"stage", jp:"段階", enSentence:"The project enters a new stage.", jpSentence:"プロジェクトは新しい段階に入ります。"},
+{en:"phase", jp:"局面", enSentence:"This phase ends soon.", jpSentence:"この局面はまもなく終わります。"},
+{en:"level", jp:"レベル", enSentence:"This level is easy.", jpSentence:"このレベルは簡単です。"},
+{en:"point", jp:"要点", enSentence:"That is the main point.", jpSentence:"それが要点です。"},
+
+{en:"line", jp:"線", enSentence:"Draw a line.", jpSentence:"線を引いてください。"},
+{en:"area", jp:"地域", enSentence:"This area is safe.", jpSentence:"この地域は安全です。"},
+{en:"space", jp:"空間", enSentence:"There is enough space.", jpSentence:"十分な空間があります。"},
+{en:"place", jp:"場所", enSentence:"This place is quiet.", jpSentence:"この場所は静かです。"},
+{en:"location", jp:"位置", enSentence:"The location is perfect.", jpSentence:"場所は完璧です。"},
+
+{en:"position", jp:"位置", enSentence:"Check your position.", jpSentence:"自分の位置を確認してください。"},
+{en:"direction", jp:"方向", enSentence:"Follow this direction.", jpSentence:"この方向に進んでください。"},
+{en:"side", jp:"側", enSentence:"Stand on this side.", jpSentence:"こちら側に立ってください。"},
+{en:"center", jp:"中心", enSentence:"Meet at the center.", jpSentence:"中心で会いましょう。"},
+{en:"edge", jp:"端", enSentence:"Sit at the edge.", jpSentence:"端に座ってください。"},
+
+{en:"top", jp:"上", enSentence:"The top is open.", jpSentence:"上は開いています。"},
+{en:"bottom", jp:"下", enSentence:"Look at the bottom.", jpSentence:"下を見てください。"},
+{en:"front", jp:"前", enSentence:"The front is clear.", jpSentence:"前は空いています。"},
+{en:"back", jp:"後ろ", enSentence:"Go to the back.", jpSentence:"後ろに行ってください。"},
+{en:"left", jp:"左", enSentence:"Turn left.", jpSentence:"左に曲がってください。"},
+
+{en:"right", jp:"右", enSentence:"Turn right.", jpSentence:"右に曲がってください。"},
+{en:"middle", jp:"真ん中", enSentence:"Sit in the middle.", jpSentence:"真ん中に座ってください。"},
+{en:"inside", jp:"内側", enSentence:"Go inside.", jpSentence:"中に入ってください。"},
+{en:"outside", jp:"外側", enSentence:"Wait outside.", jpSentence:"外で待ってください。"},
+{en:"part", jp:"部分", enSentence:"This part is broken.", jpSentence:"この部分は壊れています。"},
+
+{en:"whole", jp:"全体", enSentence:"Look at the whole.", jpSentence:"全体を見てください。"},
+{en:"piece", jp:"かけら", enSentence:"Take one piece.", jpSentence:"1つ取ってください。"},
+{en:"bit", jp:"少量", enSentence:"Wait a bit.", jpSentence:"少し待ってください。"},
+{en:"amount", jp:"量", enSentence:"The amount is small.", jpSentence:"量は少ないです。"},
+{en:"number", jp:"数", enSentence:"The number increases.", jpSentence:"数が増えます。"},
+
+{en:"total", jp:"合計", enSentence:"Check the total.", jpSentence:"合計を確認してください。"},
+{en:"sum", jp:"合計", enSentence:"The sum is correct.", jpSentence:"合計は正しいです。"},
+{en:"rest", jp:"残り", enSentence:"The rest is easy.", jpSentence:"残りは簡単です。"},
+{en:"balance", jp:"バランス", enSentence:"Keep balance.", jpSentence:"バランスを保ってください。"},
+{en:"limit", jp:"限界", enSentence:"There is a limit.", jpSentence:"限界があります。"},
+
+{en:"range", jp:"範囲", enSentence:"This range is wide.", jpSentence:"この範囲は広いです。"},
+{en:"size", jp:"大きさ", enSentence:"The size fits.", jpSentence:"大きさが合います。"},
+{en:"length", jp:"長さ", enSentence:"Measure the length.", jpSentence:"長さを測ってください。"},
+{en:"height", jp:"高さ", enSentence:"The height is low.", jpSentence:"高さは低いです。"},
+{en:"width", jp:"幅", enSentence:"The width is narrow.", jpSentence:"幅は狭いです。"},
+
+{en:"depth", jp:"深さ", enSentence:"Check the depth.", jpSentence:"深さを確認してください。"},
+{en:"weight", jp:"重さ", enSentence:"The weight is heavy.", jpSentence:"重さは重いです。"},
+{en:"mass", jp:"質量", enSentence:"Mass affects speed.", jpSentence:"質量は速度に影響します。"},
+{en:"speed", jp:"速度", enSentence:"Speed matters.", jpSentence:"速度は重要です。"},
+{en:"time", jp:"時間", enSentence:"Time passes.", jpSentence:"時間が過ぎます。"},
+
+{en:"rate", jp:"割合", enSentence:"The rate changes.", jpSentence:"割合が変わります。"},
+{en:"level", jp:"水準", enSentence:"The level rises.", jpSentence:"水準が上がります。"},
+{en:"degree", jp:"度合い", enSentence:"To some degree.", jpSentence:"ある程度まで。"},
+{en:"scale", jp:"規模", enSentence:"The scale grows.", jpSentence:"規模が拡大します。"},
+{en:"standard", jp:"基準", enSentence:"Meet the standard.", jpSentence:"基準を満たしてください。"},
+
+{en:"rule", jp:"規則", enSentence:"Follow the rule.", jpSentence:"規則を守ってください。"},
+{en:"order", jp:"順序", enSentence:"Keep the order.", jpSentence:"順序を守ってください。"},
+{en:"system", jp:"仕組み", enSentence:"The system works.", jpSentence:"仕組みは機能します。"},
+{en:"structure", jp:"構造", enSentence:"The structure is strong.", jpSentence:"構造は丈夫です。"},
+{en:"network", jp:"ネットワーク", enSentence:"The network connects.", jpSentence:"ネットワークがつながります。"},
+
+{en:"link", jp:"つながり", enSentence:"Click the link.", jpSentence:"リンクをクリックしてください。"},
+{en:"connection", jp:"接続", enSentence:"The connection is stable.", jpSentence:"接続は安定しています。"},
+{en:"contact", jp:"連絡", enSentence:"Keep contact.", jpSentence:"連絡を保ってください。"},
+{en:"relation", jp:"関係", enSentence:"The relation improves.", jpSentence:"関係が改善します。"},
+{en:"relation", jp:"関係", enSentence:"They have a close relation.", jpSentence:"彼らは親しい関係です。"},
+
+{en:"role", jp:"役割", enSentence:"This role matters.", jpSentence:"この役割は重要です。"},
+{en:"function", jp:"機能", enSentence:"The function works.", jpSentence:"機能は動きます。"},
+{en:"purpose", jp:"目的", enSentence:"The purpose is clear.", jpSentence:"目的は明確です。"},
+{en:"reason", jp:"理由", enSentence:"There is a reason.", jpSentence:"理由があります。"},
+{en:"cause", jp:"原因", enSentence:"Find the cause.", jpSentence:"原因を見つけてください。"},
+
+{en:"effect", jp:"効果", enSentence:"The effect lasts.", jpSentence:"効果が続きます。"},
+{en:"result", jp:"結果", enSentence:"The result is good.", jpSentence:"結果は良いです。"},
+{en:"outcome", jp:"成果", enSentence:"The outcome is positive.", jpSentence:"成果は前向きです。"},
+{en:"chance", jp:"機会", enSentence:"This is a chance.", jpSentence:"これは機会です。"},
+{en:"opportunity", jp:"好機", enSentence:"Take the opportunity.", jpSentence:"好機をつかんでください。"},
+
+{en:"risk", jp:"リスク", enSentence:"There is a risk.", jpSentence:"リスクがあります。"},
+{en:"danger", jp:"危険", enSentence:"Danger is near.", jpSentence:"危険が近いです。"},
+{en:"safety", jp:"安全", enSentence:"Safety first.", jpSentence:"安全第一です。"},
+{en:"security", jp:"安全性", enSentence:"Security matters.", jpSentence:"安全性は重要です。"},
+{en:"control", jp:"管理", enSentence:"Control is needed.", jpSentence:"管理が必要です。"},
+
+{en:"power", jp:"力", enSentence:"Power increases.", jpSentence:"力が増します。"},
+{en:"force", jp:"力", enSentence:"Force moves objects.", jpSentence:"力は物を動かします。"},
+{en:"energy", jp:"エネルギー", enSentence:"Energy is low.", jpSentence:"エネルギーが少ないです。"},
+{en:"strength", jp:"強さ", enSentence:"Strength grows.", jpSentence:"強さが増します。"},
+{en:"ability", jp:"能力", enSentence:"She has ability.", jpSentence:"彼女には能力があります。"},
+
+{en:"skill", jp:"技能", enSentence:"This skill helps.", jpSentence:"この技能は役立ちます。"},
+{en:"talent", jp:"才能", enSentence:"He has talent.", jpSentence:"彼には才能があります。"},
+{en:"effort", jp:"努力", enSentence:"Effort pays off.", jpSentence:"努力は報われます。"},
+{en:"work", jp:"仕事", enSentence:"Work is done.", jpSentence:"仕事は終わりました。"},
+{en:"job", jp:"職", enSentence:"He gets a job.", jpSentence:"彼は仕事を得ます。"},
+
+{en:"task", jp:"作業", enSentence:"Finish the task.", jpSentence:"作業を終えてください。"},
+{en:"duty", jp:"義務", enSentence:"Duty comes first.", jpSentence:"義務が最優先です。"},
+{en:"role", jp:"役目", enSentence:"Know your role.", jpSentence:"自分の役目を理解してください。"},
+{en:"responsibility", jp:"責任", enSentence:"Take responsibility.", jpSentence:"責任を取りましょう。"},
+{en:"care", jp:"世話", enSentence:"She shows care.", jpSentence:"彼女は思いやりを示します。"},
+
+{en:"support", jp:"支援", enSentence:"Support helps people.", jpSentence:"支援は人を助けます。"},
+{en:"help", jp:"助け", enSentence:"Help is available.", jpSentence:"助けがあります。"},
+{en:"service", jp:"奉仕", enSentence:"Service matters.", jpSentence:"奉仕は大切です。"},
+{en:"favor", jp:"親切", enSentence:"Do me a favor.", jpSentence:"お願いがあります。"},
+{en:"gift", jp:"贈り物", enSentence:"This gift is special.", jpSentence:"この贈り物は特別です。"},
+
+{en:"reward", jp:"報酬", enSentence:"The reward is high.", jpSentence:"報酬は高いです。"},
+{en:"prize", jp:"賞", enSentence:"He wins a prize.", jpSentence:"彼は賞を取ります。"},
+{en:"benefit", jp:"利益", enSentence:"This brings benefit.", jpSentence:"これは利益をもたらします。"},
+{en:"profit", jp:"利益", enSentence:"Profit increases.", jpSentence:"利益が増えます。"},
+{en:"success", jp:"成功", enSentence:"Success takes time.", jpSentence:"成功には時間がかかります。"},
+    ],
+    adjective: [
+      {en:"good", jp:"良い", enSentence:"This is good.", jpSentence:"これは良いです。"},
+{en:"bad", jp:"悪い", enSentence:"This is bad.", jpSentence:"これは悪いです。"},
+{en:"big", jp:"大きい", enSentence:"The house is big.", jpSentence:"その家は大きいです。"},
+{en:"small", jp:"小さい", enSentence:"The room is small.", jpSentence:"その部屋は小さいです。"},
+{en:"new", jp:"新しい", enSentence:"This phone is new.", jpSentence:"このスマホは新しいです。"},
+{en:"old", jp:"古い", enSentence:"The building is old.", jpSentence:"その建物は古いです。"},
+{en:"long", jp:"長い", enSentence:"The road is long.", jpSentence:"その道は長いです。"},
+{en:"short", jp:"短い", enSentence:"The break is short.", jpSentence:"休憩は短いです。"},
+{en:"high", jp:"高い", enSentence:"The price is high.", jpSentence:"値段は高いです。"},
+{en:"low", jp:"低い", enSentence:"The sound is low.", jpSentence:"音は低いです。"},
+
+{en:"easy", jp:"簡単な", enSentence:"This test is easy.", jpSentence:"このテストは簡単です。"},
+{en:"hard", jp:"難しい", enSentence:"This work is hard.", jpSentence:"この仕事は大変です。"},
+{en:"fast", jp:"速い", enSentence:"The car is fast.", jpSentence:"その車は速いです。"},
+{en:"slow", jp:"遅い", enSentence:"The train is slow.", jpSentence:"電車は遅いです。"},
+{en:"hot", jp:"暑い", enSentence:"It is hot today.", jpSentence:"今日は暑いです。"},
+{en:"cold", jp:"寒い", enSentence:"The water is cold.", jpSentence:"水は冷たいです。"},
+{en:"warm", jp:"暖かい", enSentence:"The room is warm.", jpSentence:"部屋は暖かいです。"},
+{en:"cool", jp:"涼しい", enSentence:"The night is cool.", jpSentence:"夜は涼しいです。"},
+{en:"young", jp:"若い", enSentence:"She is young.", jpSentence:"彼女は若いです。"},
+{en:"early", jp:"早い", enSentence:"It is early.", jpSentence:"まだ早いです。"},
+
+{en:"late", jp:"遅い", enSentence:"I am late.", jpSentence:"私は遅れています。"},
+{en:"right", jp:"正しい", enSentence:"The answer is right.", jpSentence:"答えは正しいです。"},
+{en:"wrong", jp:"間違った", enSentence:"This is wrong.", jpSentence:"これは間違いです。"},
+{en:"true", jp:"本当の", enSentence:"This story is true.", jpSentence:"この話は本当です。"},
+{en:"false", jp:"偽の", enSentence:"The news is false.", jpSentence:"そのニュースは嘘です。"},
+{en:"same", jp:"同じ", enSentence:"We have the same idea.", jpSentence:"私たちは同じ考えです。"},
+{en:"different", jp:"違う", enSentence:"They are different.", jpSentence:"それらは違います。"},
+{en:"full", jp:"満ちた", enSentence:"The box is full.", jpSentence:"箱はいっぱいです。"},
+{en:"empty", jp:"空の", enSentence:"The cup is empty.", jpSentence:"カップは空です。"},
+{en:"open", jp:"開いている", enSentence:"The shop is open.", jpSentence:"店は開いています。"},
+
+{en:"closed", jp:"閉まっている", enSentence:"The door is closed.", jpSentence:"ドアは閉まっています。"},
+{en:"clean", jp:"きれいな", enSentence:"The room is clean.", jpSentence:"部屋はきれいです。"},
+{en:"dirty", jp:"汚い", enSentence:"My shoes are dirty.", jpSentence:"靴が汚れています。"},
+{en:"safe", jp:"安全な", enSentence:"This place is safe.", jpSentence:"ここは安全です。"},
+{en:"dangerous", jp:"危険な", enSentence:"That road is dangerous.", jpSentence:"その道は危険です。"},
+{en:"cheap", jp:"安い", enSentence:"This shirt is cheap.", jpSentence:"このシャツは安いです。"},
+{en:"expensive", jp:"高価な", enSentence:"The watch is expensive.", jpSentence:"その時計は高価です。"},
+{en:"rich", jp:"裕福な", enSentence:"He is rich.", jpSentence:"彼は裕福です。"},
+{en:"poor", jp:"貧しい", enSentence:"The area is poor.", jpSentence:"その地域は貧しいです。"},
+{en:"busy", jp:"忙しい", enSentence:"I am busy today.", jpSentence:"今日は忙しいです。"},
+
+{en:"free", jp:"暇な", enSentence:"I am free now.", jpSentence:"今は暇です。"},
+{en:"happy", jp:"幸せな", enSentence:"She is happy.", jpSentence:"彼女は幸せです。"},
+{en:"sad", jp:"悲しい", enSentence:"The movie is sad.", jpSentence:"その映画は悲しいです。"},
+{en:"angry", jp:"怒った", enSentence:"He is angry.", jpSentence:"彼は怒っています。"},
+{en:"calm", jp:"落ち着いた", enSentence:"She is calm.", jpSentence:"彼女は落ち着いています。"},
+{en:"tired", jp:"疲れた", enSentence:"I am tired.", jpSentence:"私は疲れています。"},
+{en:"sleepy", jp:"眠い", enSentence:"I am sleepy.", jpSentence:"私は眠いです。"},
+{en:"hungry", jp:"お腹が空いた", enSentence:"I am hungry.", jpSentence:"お腹が空きました。"},
+{en:"thirsty", jp:"喉が渇いた", enSentence:"I am thirsty.", jpSentence:"喉が渇きました。"},
+{en:"healthy", jp:"健康な", enSentence:"She is healthy.", jpSentence:"彼女は健康です。"},
+
+{en:"sick", jp:"病気の", enSentence:"He is sick.", jpSentence:"彼は病気です。"},
+{en:"strong", jp:"強い", enSentence:"He is strong.", jpSentence:"彼は強いです。"},
+{en:"weak", jp:"弱い", enSentence:"I feel weak.", jpSentence:"弱く感じます。"},
+{en:"bright", jp:"明るい", enSentence:"The room is bright.", jpSentence:"部屋は明るいです。"},
+{en:"dark", jp:"暗い", enSentence:"The sky is dark.", jpSentence:"空は暗いです。"},
+{en:"light", jp:"軽い", enSentence:"This bag is light.", jpSentence:"このバッグは軽いです。"},
+{en:"heavy", jp:"重い", enSentence:"The box is heavy.", jpSentence:"箱は重いです。"},
+{en:"loud", jp:"うるさい", enSentence:"The music is loud.", jpSentence:"音楽がうるさいです。"},
+{en:"quiet", jp:"静かな", enSentence:"The room is quiet.", jpSentence:"部屋は静かです。"},
+{en:"clear", jp:"はっきりした", enSentence:"The sky is clear.", jpSentence:"空は澄んでいます。"},
+{en:"simple", jp:"簡単な", enSentence:"The rule is simple.", jpSentence:"その規則は簡単です。"},
+{en:"easygoing", jp:"気楽な", enSentence:"He is easygoing.", jpSentence:"彼は気楽な人です。"},
+{en:"kind", jp:"親切な", enSentence:"She is kind.", jpSentence:"彼女は親切です。"},
+{en:"nice", jp:"感じの良い", enSentence:"He is nice.", jpSentence:"彼は感じが良いです。"},
+{en:"friendly", jp:"友好的な", enSentence:"The staff is friendly.", jpSentence:"スタッフは親切です。"},
+
+{en:"polite", jp:"礼儀正しい", enSentence:"She is polite.", jpSentence:"彼女は礼儀正しいです。"},
+{en:"rude", jp:"失礼な", enSentence:"That comment is rude.", jpSentence:"その発言は失礼です。"},
+{en:"honest", jp:"正直な", enSentence:"He is honest.", jpSentence:"彼は正直です。"},
+{en:"fair", jp:"公平な", enSentence:"The rule is fair.", jpSentence:"その規則は公平です。"},
+{en:"lucky", jp:"運の良い", enSentence:"I am lucky.", jpSentence:"私は運が良いです。"},
+
+{en:"popular", jp:"人気のある", enSentence:"This app is popular.", jpSentence:"このアプリは人気です。"},
+{en:"famous", jp:"有名な", enSentence:"She is famous.", jpSentence:"彼女は有名です。"},
+{en:"common", jp:"一般的な", enSentence:"This word is common.", jpSentence:"この単語は一般的です。"},
+{en:"rare", jp:"珍しい", enSentence:"This animal is rare.", jpSentence:"この動物は珍しいです。"},
+{en:"normal", jp:"普通の", enSentence:"This is normal.", jpSentence:"これは普通です。"},
+
+{en:"special", jp:"特別な", enSentence:"Today is special.", jpSentence:"今日は特別です。"},
+{en:"important", jp:"重要な", enSentence:"This is important.", jpSentence:"これは重要です。"},
+{en:"useful", jp:"役に立つ", enSentence:"This tool is useful.", jpSentence:"この道具は役に立ちます。"},
+{en:"helpful", jp:"助けになる", enSentence:"Her advice is helpful.", jpSentence:"彼女の助言は役立ちます。"},
+{en:"ready", jp:"準備ができた", enSentence:"I am ready.", jpSentence:"準備できています。"},
+
+{en:"careful", jp:"注意深い", enSentence:"Be careful.", jpSentence:"気をつけてください。"},
+{en:"careless", jp:"不注意な", enSentence:"That was careless.", jpSentence:"それは不注意でした。"},
+{en:"serious", jp:"真剣な", enSentence:"He looks serious.", jpSentence:"彼は真剣そうです。"},
+{en:"funny", jp:"面白い", enSentence:"The story is funny.", jpSentence:"その話は面白いです。"},
+{en:"interesting", jp:"興味深い", enSentence:"This book is interesting.", jpSentence:"この本は面白いです。"},
+
+{en:"boring", jp:"退屈な", enSentence:"The class is boring.", jpSentence:"その授業は退屈です。"},
+{en:"exciting", jp:"わくわくする", enSentence:"The game is exciting.", jpSentence:"その試合はわくわくします。"},
+{en:"scary", jp:"怖い", enSentence:"The movie is scary.", jpSentence:"その映画は怖いです。"},
+{en:"beautiful", jp:"美しい", enSentence:"The view is beautiful.", jpSentence:"景色は美しいです。"},
+{en:"pretty", jp:"かわいい", enSentence:"The dress is pretty.", jpSentence:"その服はかわいいです。"},
+
+{en:"ugly", jp:"醜い", enSentence:"The building is ugly.", jpSentence:"その建物は醜いです。"},
+{en:"cute", jp:"かわいい", enSentence:"The baby is cute.", jpSentence:"赤ちゃんはかわいいです。"},
+{en:"tall", jp:"背が高い", enSentence:"He is tall.", jpSentence:"彼は背が高いです。"},
+{en:"short-haired", jp:"短髪の", enSentence:"She is short-haired.", jpSentence:"彼女は短髪です。"},
+{en:"thin", jp:"細い", enSentence:"The cat is thin.", jpSentence:"その猫は細いです。"},
+
+{en:"fat", jp:"太った", enSentence:"The dog is fat.", jpSentence:"その犬は太っています。"},
+{en:"wide", jp:"広い", enSentence:"The road is wide.", jpSentence:"道は広いです。"},
+{en:"narrow", jp:"狭い", enSentence:"The street is narrow.", jpSentence:"通りは狭いです。"},
+{en:"deep", jp:"深い", enSentence:"The lake is deep.", jpSentence:"その湖は深いです。"},
+{en:"shallow", jp:"浅い", enSentence:"The pool is shallow.", jpSentence:"そのプールは浅いです。"},
+
+{en:"smooth", jp:"滑らかな", enSentence:"The surface is smooth.", jpSentence:"表面は滑らかです。"},
+{en:"rough", jp:"ざらざらした", enSentence:"The road is rough.", jpSentence:"道はでこぼこです。"},
+{en:"soft", jp:"柔らかい", enSentence:"The pillow is soft.", jpSentence:"枕は柔らかいです。"},
+{en:"hard-working", jp:"勤勉な", enSentence:"She is hard-working.", jpSentence:"彼女は勤勉です。"},
+{en:"wet", jp:"濡れた", enSentence:"The floor is wet.", jpSentence:"床は濡れています。"},
+
+{en:"dry", jp:"乾いた", enSentence:"The clothes are dry.", jpSentence:"服は乾いています。"},
+{en:"fresh", jp:"新鮮な", enSentence:"The food is fresh.", jpSentence:"食べ物は新鮮です。"},
+{en:"old-fashioned", jp:"昔風の", enSentence:"The design is old-fashioned.", jpSentence:"そのデザインは昔風です。"},
+{en:"modern", jp:"現代的な", enSentence:"The building is modern.", jpSentence:"その建物は現代的です。"},
+{en:"local", jp:"地元の", enSentence:"This is local food.", jpSentence:"これは地元の料理です。"},
+
+{en:"global", jp:"世界的な", enSentence:"This is a global issue.", jpSentence:"これは世界的な問題です。"},
+{en:"public", jp:"公的な", enSentence:"This is public space.", jpSentence:"ここは公共の場所です。"},
+{en:"private", jp:"個人的な", enSentence:"This is private.", jpSentence:"これは個人的なものです。"},
+{en:"social", jp:"社会的な", enSentence:"Social skills matter.", jpSentence:"社会的な能力は重要です。"},
+{en:"personal", jp:"個人の", enSentence:"This is personal.", jpSentence:"これは個人的なことです。"},
+
+{en:"basic", jp:"基本的な", enSentence:"This is basic English.", jpSentence:"これは基本的な英語です。"},
+{en:"simple-minded", jp:"単純な", enSentence:"He is simple-minded.", jpSentence:"彼は単純です。"},
+{en:"real", jp:"本物の", enSentence:"This is real.", jpSentence:"これは本物です。"},
+{en:"fake", jp:"偽物の", enSentence:"The news is fake.", jpSentence:"そのニュースは偽物です。"},
+{en:"exact", jp:"正確な", enSentence:"The number is exact.", jpSentence:"数字は正確です。"},
+
+{en:"correct", jp:"正しい", enSentence:"Your answer is correct.", jpSentence:"あなたの答えは正しいです。"},
+{en:"wronged", jp:"不当に扱われた", enSentence:"He felt wronged.", jpSentence:"彼は不当に扱われたと感じました。"},
+{en:"possible", jp:"可能な", enSentence:"This is possible.", jpSentence:"これは可能です。"},
+{en:"impossible", jp:"不可能な", enSentence:"This is impossible.", jpSentence:"これは不可能です。"},
+{en:"ready-made", jp:"既製の", enSentence:"This is ready-made food.", jpSentence:"これは出来合いの食品です。"},
+
+{en:"daily", jp:"毎日の", enSentence:"This is a daily habit.", jpSentence:"これは毎日の習慣です。"},
+{en:"weekly", jp:"毎週の", enSentence:"We have weekly meetings.", jpSentence:"私たちは毎週会議があります。"},
+{en:"monthly", jp:"毎月の", enSentence:"This is a monthly fee.", jpSentence:"これは月額料金です。"},
+{en:"annual", jp:"毎年の", enSentence:"This is an annual event.", jpSentence:"これは毎年の行事です。"},
+{en:"early-morning", jp:"早朝の", enSentence:"I like early-morning walks.", jpSentence:"私は早朝の散歩が好きです。"},
+
+{en:"late-night", jp:"深夜の", enSentence:"This is a late-night show.", jpSentence:"これは深夜番組です。"},
+{en:"nearby", jp:"近くの", enSentence:"There is a nearby store.", jpSentence:"近くに店があります。"},
+{en:"far", jp:"遠い", enSentence:"The station is far.", jpSentence:"駅は遠いです。"},
+{en:"close", jp:"近い", enSentence:"The shop is close.", jpSentence:"店は近いです。"},
+{en:"open-minded", jp:"心の広い", enSentence:"She is open-minded.", jpSentence:"彼女は心が広いです。"},
+
+{en:"honest-hearted", jp:"誠実な", enSentence:"He is honest-hearted.", jpSentence:"彼は誠実です。"},
+{en:"patient", jp:"忍耐強い", enSentence:"She is patient.", jpSentence:"彼女は忍耐強いです。"},
+{en:"impatient", jp:"せっかちな", enSentence:"He is impatient.", jpSentence:"彼はせっかちです。"},
+{en:"active", jp:"活発な", enSentence:"She is active.", jpSentence:"彼女は活発です。"},
+{en:"quiet-minded", jp:"落ち着いた", enSentence:"He is quiet-minded.", jpSentence:"彼は落ち着いています。"},
+
+{en:"brave", jp:"勇敢な", enSentence:"He is brave.", jpSentence:"彼は勇敢です。"},
+{en:"afraid", jp:"怖がっている", enSentence:"She is afraid.", jpSentence:"彼女は怖がっています。"},
+{en:"confident", jp:"自信のある", enSentence:"He is confident.", jpSentence:"彼は自信があります。"},
+{en:"nervous", jp:"緊張した", enSentence:"I feel nervous.", jpSentence:"私は緊張しています。"},
+{en:"proud", jp:"誇りに思う", enSentence:"I am proud.", jpSentence:"私は誇りに思っています。"},
+
+{en:"ashamed", jp:"恥ずかしい", enSentence:"He feels ashamed.", jpSentence:"彼は恥ずかしく感じています。"},
+{en:"satisfied", jp:"満足した", enSentence:"I am satisfied.", jpSentence:"私は満足しています。"},
+{en:"disappointed", jp:"がっかりした", enSentence:"She is disappointed.", jpSentence:"彼女はがっかりしています。"},
+{en:"successful", jp:"成功した", enSentence:"The project is successful.", jpSentence:"そのプロジェクトは成功しました。"},
+{en:"unsuccessful", jp:"失敗した", enSentence:"The plan was unsuccessful.", jpSentence:"その計画は失敗しました。"},
+    ],
+    adverb : [
+ {en:"very", jp:"とても", enSentence:"It is very cold.", jpSentence:"とても寒いです。"},
+{en:"really", jp:"本当に", enSentence:"I really like it.", jpSentence:"本当にそれが好きです。"},
+{en:"too", jp:"〜すぎる", enSentence:"It is too hot.", jpSentence:"暑すぎます。"},
+{en:"quite", jp:"かなり", enSentence:"She is quite busy.", jpSentence:"彼女はかなり忙しいです。"},
+{en:"so", jp:"とても", enSentence:"It is so good.", jpSentence:"とても良いです。"},
+
+{en:"just", jp:"ちょうど", enSentence:"I just arrived.", jpSentence:"ちょうど着きました。"},
+{en:"only", jp:"だけ", enSentence:"I have only one.", jpSentence:"1つだけ持っています。"},
+{en:"also", jp:"〜もまた", enSentence:"I also agree.", jpSentence:"私も同意します。"},
+{en:"even", jp:"〜でさえ", enSentence:"Even kids know.", jpSentence:"子どもでさえ知っています。"},
+{en:"almost", jp:"ほとんど", enSentence:"I almost forgot.", jpSentence:"ほとんど忘れるところでした。"},
+
+{en:"always", jp:"いつも", enSentence:"She always smiles.", jpSentence:"彼女はいつも笑っています。"},
+{en:"usually", jp:"たいてい", enSentence:"I usually wake early.", jpSentence:"たいてい早く起きます。"},
+{en:"often", jp:"よく", enSentence:"I often walk here.", jpSentence:"よくここを歩きます。"},
+{en:"sometimes", jp:"ときどき", enSentence:"I sometimes cook.", jpSentence:"ときどき料理します。"},
+{en:"rarely", jp:"めったに〜ない", enSentence:"I rarely drink.", jpSentence:"めったに飲みません。"},
+
+{en:"never", jp:"決して〜ない", enSentence:"I never lie.", jpSentence:"決して嘘をつきません。"},
+{en:"now", jp:"今", enSentence:"I am busy now.", jpSentence:"今忙しいです。"},
+{en:"today", jp:"今日", enSentence:"I work today.", jpSentence:"今日は働きます。"},
+{en:"yesterday", jp:"昨日", enSentence:"I met him yesterday.", jpSentence:"昨日彼に会いました。"},
+{en:"tomorrow", jp:"明日", enSentence:"I will go tomorrow.", jpSentence:"明日行きます。"},
+
+{en:"soon", jp:"すぐに", enSentence:"I will call soon.", jpSentence:"すぐ電話します。"},
+{en:"late", jp:"遅く", enSentence:"He arrived late.", jpSentence:"彼は遅く来ました。"},
+{en:"early", jp:"早く", enSentence:"She woke early.", jpSentence:"彼女は早く起きました。"},
+{en:"here", jp:"ここに", enSentence:"I am here.", jpSentence:"私はここにいます。"},
+{en:"there", jp:"そこに", enSentence:"Put it there.", jpSentence:"そこに置いてください。"},
+
+{en:"everywhere", jp:"どこでも", enSentence:"I looked everywhere.", jpSentence:"どこでも探しました。"},
+{en:"anywhere", jp:"どこかに", enSentence:"You can sit anywhere.", jpSentence:"どこでも座れます。"},
+{en:"nowhere", jp:"どこにも〜ない", enSentence:"I found it nowhere.", jpSentence:"どこにも見つかりませんでした。"},
+{en:"inside", jp:"中で", enSentence:"Stay inside.", jpSentence:"中にいてください。"},
+{en:"outside", jp:"外で", enSentence:"Wait outside.", jpSentence:"外で待ってください。"},
+
+{en:"up", jp:"上に", enSentence:"Look up.", jpSentence:"上を見てください。"},
+{en:"down", jp:"下に", enSentence:"Sit down.", jpSentence:"座ってください。"},
+{en:"away", jp:"離れて", enSentence:"Stay away.", jpSentence:"離れてください。"},
+{en:"back", jp:"戻って", enSentence:"Come back.", jpSentence:"戻ってきてください。"},
+{en:"together", jp:"一緒に", enSentence:"We work together.", jpSentence:"一緒に働きます。"},
+
+{en:"alone", jp:"一人で", enSentence:"I live alone.", jpSentence:"一人で暮らしています。"},
+{en:"already", jp:"すでに", enSentence:"I already ate.", jpSentence:"もう食べました。"},
+{en:"still", jp:"まだ", enSentence:"I am still here.", jpSentence:"まだここにいます。"},
+{en:"yet", jp:"まだ（否定・疑問）", enSentence:"Not yet.", jpSentence:"まだです。"},
+{en:"again", jp:"再び", enSentence:"Try again.", jpSentence:"もう一度やってください。"},
+
+{en:"once", jp:"一度", enSentence:"I went once.", jpSentence:"一度行きました。"},
+{en:"twice", jp:"二度", enSentence:"I called twice.", jpSentence:"二度電話しました。"},
+{en:"first", jp:"最初に", enSentence:"First, listen.", jpSentence:"まず聞いてください。"},
+{en:"next", jp:"次に", enSentence:"Next, write.", jpSentence:"次に書いてください。"},
+{en:"finally", jp:"ついに", enSentence:"Finally, it ended.", jpSentence:"ついに終わりました。"},
+
+{en:"quickly", jp:"速く", enSentence:"He runs quickly.", jpSentence:"彼は速く走ります。"},
+{en:"slowly", jp:"ゆっくり", enSentence:"Please speak slowly.", jpSentence:"ゆっくり話してください。"},
+{en:"easily", jp:"簡単に", enSentence:"I can do it easily.", jpSentence:"簡単にできます。"},
+{en:"carefully", jp:"注意深く", enSentence:"Drive carefully.", jpSentence:"注意して運転してください。"},
+{en:"clearly", jp:"はっきり", enSentence:"I see clearly.", jpSentence:"はっきり見えます。"},
+
+{en:"loudly", jp:"大きな声で", enSentence:"He spoke loudly.", jpSentence:"彼は大きな声で話しました。"},
+{en:"quietly", jp:"静かに", enSentence:"She walked quietly.", jpSentence:"彼女は静かに歩きました。"},
+{en:"happily", jp:"幸せに", enSentence:"They lived happily.", jpSentence:"彼らは幸せに暮らしました。"},
+{en:"sadly", jp:"悲しそうに", enSentence:"He smiled sadly.", jpSentence:"彼は悲しそうに笑いました。"},
+{en:"angrily", jp:"怒って", enSentence:"She spoke angrily.", jpSentence:"彼女は怒って話しました。"},
+
+{en:"seriously", jp:"真剣に", enSentence:"He works seriously.", jpSentence:"彼は真剣に働きます。"},
+{en:"simply", jp:"簡単に", enSentence:"Explain simply.", jpSentence:"簡単に説明してください。"},
+{en:"exactly", jp:"正確に", enSentence:"That is exactly right.", jpSentence:"それは正確に正しいです。"},
+{en:"probably", jp:"たぶん", enSentence:"It will probably rain.", jpSentence:"たぶん雨が降ります。"},
+{en:"maybe", jp:"たぶん", enSentence:"Maybe later.", jpSentence:"たぶん後で。"},
+
+{en:"surely", jp:"きっと", enSentence:"He will surely come.", jpSentence:"彼はきっと来ます。"},
+{en:"certainly", jp:"確かに", enSentence:"I can certainly help.", jpSentence:"確かに助けられます。"},
+{en:"luckily", jp:"幸運にも", enSentence:"Luckily, I won.", jpSentence:"幸運にも勝ちました。"},
+{en:"suddenly", jp:"突然", enSentence:"It suddenly stopped.", jpSentence:"突然止まりました。"},
+{en:"recently", jp:"最近", enSentence:"I moved recently.", jpSentence:"最近引っ越しました。"},
+
+{en:"currently", jp:"現在", enSentence:"I am currently busy.", jpSentence:"現在忙しいです。"},
+{en:"especially", jp:"特に", enSentence:"I like it especially.", jpSentence:"特にそれが好きです。"},
+{en:"actually", jp:"実は", enSentence:"Actually, I agree.", jpSentence:"実は賛成です。"},
+{en:"basically", jp:"基本的に", enSentence:"Basically, it works.", jpSentence:"基本的にうまくいきます。"},
+{en:"generally", jp:"一般的に", enSentence:"Generally, yes.", jpSentence:"一般的にはそうです。"},
+
+{en:"normally", jp:"通常は", enSentence:"I normally walk.", jpSentence:"普段は歩きます。"},
+{en:"directly", jp:"直接", enSentence:"Come directly.", jpSentence:"直接来てください。"},
+{en:"immediately", jp:"すぐに", enSentence:"Call me immediately.", jpSentence:"すぐに電話してください。"},
+{en:"closely", jp:"注意深く", enSentence:"Watch closely.", jpSentence:"よく見てください。"},
+{en:"widely", jp:"広く", enSentence:"This is widely known.", jpSentence:"これは広く知られています。"},
+
+{en:"strongly", jp:"強く", enSentence:"I strongly agree.", jpSentence:"強く賛成します。"},
+{en:"deeply", jp:"深く", enSentence:"I am deeply moved.", jpSentence:"深く感動しました。"},
+{en:"fully", jp:"完全に", enSentence:"I fully understand.", jpSentence:"完全に理解しています。"},
+{en:"partly", jp:"部分的に", enSentence:"I partly agree.", jpSentence:"部分的に賛成です。"},
+{en:"mostly", jp:"ほとんど", enSentence:"I mostly work at home.", jpSentence:"ほとんど家で働いています。"},
+
+{en:"nearly", jp:"ほぼ", enSentence:"It is nearly done.", jpSentence:"ほぼ終わりです。"},
+{en:"hardly", jp:"ほとんど〜ない", enSentence:"I hardly know him.", jpSentence:"彼のことはほとんど知りません。"},
+{en:"barely", jp:"かろうじて", enSentence:"I barely passed.", jpSentence:"かろうじて合格しました。"},
+{en:"truly", jp:"本当に", enSentence:"I truly believe.", jpSentence:"本当に信じています。"},
+{en:"freely", jp:"自由に", enSentence:"Speak freely.", jpSentence:"自由に話してください。"},
+
+{en:"publicly", jp:"公に", enSentence:"He spoke publicly.", jpSentence:"彼は公に話しました。"},
+{en:"privately", jp:"個人的に", enSentence:"Let's talk privately.", jpSentence:"個人的に話しましょう。"},
+{en:"locally", jp:"地元で", enSentence:"It is made locally.", jpSentence:"地元で作られています。"},
+{en:"globally", jp:"世界的に", enSentence:"It is used globally.", jpSentence:"世界的に使われています。"},
+{en:"daily", jp:"毎日", enSentence:"I exercise daily.", jpSentence:"毎日運動します。"},
+
+{en:"weekly", jp:"毎週", enSentence:"We meet weekly.", jpSentence:"毎週会います。"},
+{en:"monthly", jp:"毎月", enSentence:"I pay monthly.", jpSentence:"毎月支払います。"},
+{en:"annually", jp:"毎年", enSentence:"It happens annually.", jpSentence:"毎年起こります。"},
+{en:"forever", jp:"永遠に", enSentence:"I will remember forever.", jpSentence:"永遠に覚えています。"},
+{en:"eventually", jp:"最終的に", enSentence:"Eventually, it worked.", jpSentence:"最終的にうまくいきました。"},
+
+{en:"meanwhile", jp:"その間に", enSentence:"Meanwhile, wait here.", jpSentence:"その間、ここで待ってください。"},
+{en:"otherwise", jp:"さもなければ", enSentence:"Hurry, otherwise late.", jpSentence:"急がないと遅れます。"},
+{en:"therefore", jp:"それゆえに", enSentence:"Therefore, I agree.", jpSentence:"それゆえに賛成です。"},
+{en:"however", jp:"しかし", enSentence:"However, I disagree.", jpSentence:"しかし、反対です。"},
+{en:"sometimes", jp:"ときどき", enSentence:"I sometimes study at night.", jpSentence:"私はときどき夜に勉強します。"},
+    ],
+    preposition : [
+ {en:"in", jp:"〜の中に", enSentence:"The book is in the bag.", jpSentence:"本はかばんの中にあります。"},
+{en:"on", jp:"〜の上に", enSentence:"The phone is on the table.", jpSentence:"電話は机の上にあります。"},
+{en:"at", jp:"〜で", enSentence:"She is at home.", jpSentence:"彼女は家にいます。"},
+{en:"to", jp:"〜へ", enSentence:"I go to school.", jpSentence:"私は学校へ行きます。"},
+{en:"from", jp:"〜から", enSentence:"I come from Japan.", jpSentence:"私は日本から来ました。"},
+
+{en:"for", jp:"〜のために", enSentence:"This gift is for you.", jpSentence:"このプレゼントはあなたのためです。"},
+{en:"with", jp:"〜と一緒に", enSentence:"I go with my friend.", jpSentence:"友達と一緒に行きます。"},
+{en:"without", jp:"〜なしで", enSentence:"I live without TV.", jpSentence:"テレビなしで暮らしています。"},
+{en:"by", jp:"〜によって", enSentence:"I go by bus.", jpSentence:"バスで行きます。"},
+{en:"about", jp:"〜について", enSentence:"We talk about work.", jpSentence:"仕事について話します。"},
+
+{en:"of", jp:"〜の", enSentence:"The door of the house.", jpSentence:"家のドアです。"},
+{en:"under", jp:"〜の下に", enSentence:"The cat is under the table.", jpSentence:"猫は机の下にいます。"},
+{en:"over", jp:"〜の上に", enSentence:"The plane flies over the city.", jpSentence:"飛行機は街の上を飛びます。"},
+{en:"above", jp:"〜より上に", enSentence:"The light is above the door.", jpSentence:"明かりはドアの上にあります。"},
+{en:"below", jp:"〜より下に", enSentence:"The temperature is below zero.", jpSentence:"気温は0度以下です。"},
+
+{en:"between", jp:"〜の間に", enSentence:"The shop is between banks.", jpSentence:"店は銀行の間にあります。"},
+{en:"among", jp:"〜の中で", enSentence:"She is among friends.", jpSentence:"彼女は友達の中にいます。"},
+{en:"before", jp:"〜の前に", enSentence:"Wash hands before dinner.", jpSentence:"夕食の前に手を洗います。"},
+{en:"after", jp:"〜の後で", enSentence:"We eat after work.", jpSentence:"仕事の後で食べます。"},
+{en:"during", jp:"〜の間に", enSentence:"No calls during class.", jpSentence:"授業中は電話禁止です。"},
+
+{en:"into", jp:"〜の中へ", enSentence:"He walks into the room.", jpSentence:"彼は部屋の中へ入ります。"},
+{en:"out", jp:"〜の外へ", enSentence:"Go out of the house.", jpSentence:"家の外へ出てください。"},
+{en:"up", jp:"〜へ上がって", enSentence:"Walk up the hill.", jpSentence:"丘を上ってください。"},
+{en:"down", jp:"〜へ下がって", enSentence:"Run down the street.", jpSentence:"通りを下って走ります。"},
+{en:"across", jp:"〜を横切って", enSentence:"Go across the road.", jpSentence:"道を渡ってください。"},
+
+{en:"through", jp:"〜を通って", enSentence:"Walk through the park.", jpSentence:"公園を通って歩きます。"},
+{en:"around", jp:"〜の周りに", enSentence:"Sit around the table.", jpSentence:"テーブルの周りに座ってください。"},
+{en:"near", jp:"〜の近くに", enSentence:"I live near the station.", jpSentence:"駅の近くに住んでいます。"},
+{en:"far", jp:"〜から遠くに", enSentence:"The town is far from here.", jpSentence:"その町はここから遠いです。"},
+{en:"behind", jp:"〜の後ろに", enSentence:"He stands behind me.", jpSentence:"彼は私の後ろに立っています。"},
+
+{en:"in front of", jp:"〜の前に", enSentence:"She stands in front of the door.", jpSentence:"彼女はドアの前に立っています。"},
+{en:"beside", jp:"〜の横に", enSentence:"Sit beside me.", jpSentence:"私の横に座ってください。"},
+{en:"next to", jp:"〜の隣に", enSentence:"The shop is next to the bank.", jpSentence:"店は銀行の隣です。"},
+{en:"inside", jp:"〜の内側に", enSentence:"Stay inside the room.", jpSentence:"部屋の中にいてください。"},
+{en:"outside", jp:"〜の外に", enSentence:"Wait outside the building.", jpSentence:"建物の外で待ってください。"},
+
+{en:"within", jp:"〜以内に", enSentence:"Finish within an hour.", jpSentence:"1時間以内に終えてください。"},
+{en:"beyond", jp:"〜を越えて", enSentence:"Beyond the river is a town.", jpSentence:"川の向こうに町があります。"},
+{en:"against", jp:"〜に反して", enSentence:"Lean against the wall.", jpSentence:"壁にもたれてください。"},
+{en:"toward", jp:"〜の方へ", enSentence:"Walk toward the exit.", jpSentence:"出口の方へ歩いてください。"},
+{en:"upon", jp:"〜の上に", enSentence:"Snow fell upon the ground.", jpSentence:"雪が地面の上に降りました。"},
+
+{en:"past", jp:"〜を過ぎて", enSentence:"Walk past the station.", jpSentence:"駅を過ぎて歩いてください。"},
+{en:"since", jp:"〜以来", enSentence:"I have lived here since 2020.", jpSentence:"2020年からここに住んでいます。"},
+{en:"until", jp:"〜まで", enSentence:"Wait until noon.", jpSentence:"正午まで待ってください。"},
+{en:"per", jp:"〜につき", enSentence:"Paid per hour.", jpSentence:"1時間あたりの支払いです。"},
+{en:"via", jp:"〜経由で", enSentence:"Send it via email.", jpSentence:"メールで送ってください。"},
+
+{en:"despite", jp:"〜にもかかわらず", enSentence:"He went out despite the rain.", jpSentence:"雨にもかかわらず外出しました。"},
+{en:"except", jp:"〜を除いて", enSentence:"Everyone came except him.", jpSentence:"彼以外は全員来ました。"},
+{en:"like", jp:"〜のように", enSentence:"He runs like a pro.", jpSentence:"彼はプロのように走ります。"},
+{en:"unlike", jp:"〜とは違って", enSentence:"Unlike me, she is calm.", jpSentence:"私と違って彼女は落ち着いています。"},
+{en:"according to", jp:"〜によると", enSentence:"According to the news, it rains.", jpSentence:"ニュースによると雨です。"},    
+    ],
+    basic: [
+{en:"I", jp:"私", enSentence:"I am here.", jpSentence:"私はここにいます。"},
+{en:"you", jp:"あなた", enSentence:"You are right.", jpSentence:"あなたは正しいです。"},
+{en:"he", jp:"彼", enSentence:"He is kind.", jpSentence:"彼は親切です。"},
+{en:"she", jp:"彼女", enSentence:"She is busy.", jpSentence:"彼女は忙しいです。"},
+{en:"it", jp:"それ", enSentence:"It is important.", jpSentence:"それは重要です。"},
+
+{en:"we", jp:"私たち", enSentence:"We agree.", jpSentence:"私たちは賛成します。"},
+{en:"they", jp:"彼ら", enSentence:"They are ready.", jpSentence:"彼らは準備できています。"},
+{en:"me", jp:"私を", enSentence:"Call me.", jpSentence:"私に電話してください。"},
+{en:"him", jp:"彼を", enSentence:"I know him.", jpSentence:"私は彼を知っています。"},
+{en:"her", jp:"彼女を", enSentence:"Help her.", jpSentence:"彼女を助けてください。"},
+
+{en:"us", jp:"私たちを", enSentence:"Join us.", jpSentence:"私たちに参加してください。"},
+{en:"them", jp:"彼らを", enSentence:"I saw them.", jpSentence:"私は彼らを見ました。"},
+{en:"my", jp:"私の", enSentence:"This is my bag.", jpSentence:"これは私のバッグです。"},
+{en:"your", jp:"あなたの", enSentence:"Your idea is good.", jpSentence:"あなたの考えは良いです。"},
+{en:"his", jp:"彼の", enSentence:"This is his car.", jpSentence:"これは彼の車です。"},
+
+{en:"its", jp:"それの", enSentence:"The dog hurt its leg.", jpSentence:"その犬は足を痛めました。"},
+{en:"our", jp:"私たちの", enSentence:"Our plan works.", jpSentence:"私たちの計画はうまくいきます。"},
+{en:"their", jp:"彼らの", enSentence:"Their house is big.", jpSentence:"彼らの家は大きいです。"},
+{en:"mine", jp:"私のもの", enSentence:"This is mine.", jpSentence:"これは私のものです。"},
+{en:"yours", jp:"あなたのもの", enSentence:"Is this yours?", jpSentence:"これはあなたのものですか？"},
+
+{en:"this", jp:"これ", enSentence:"This is easy.", jpSentence:"これは簡単です。"},
+{en:"that", jp:"あれ", enSentence:"That is far.", jpSentence:"あれは遠いです。"},
+{en:"these", jp:"これら", enSentence:"These are new.", jpSentence:"これらは新しいです。"},
+{en:"those", jp:"あれら", enSentence:"Those are old.", jpSentence:"あれらは古いです。"},
+{en:"someone", jp:"誰か", enSentence:"Someone called you.", jpSentence:"誰かがあなたに電話しました。"},
+
+{en:"something", jp:"何か", enSentence:"I need something.", jpSentence:"何か必要です。"},
+{en:"everyone", jp:"みんな", enSentence:"Everyone agrees.", jpSentence:"みんな同意します。"},
+{en:"everything", jp:"すべて", enSentence:"Everything is ready.", jpSentence:"すべて準備できています。"},
+{en:"someone", jp:"誰か", enSentence:"Someone is here.", jpSentence:"誰かがここにいます。"},
+{en:"nobody", jp:"誰も〜ない", enSentence:"Nobody knows.", jpSentence:"誰も知りません。"},
+
+{en:"a", jp:"1つの", enSentence:"I saw a dog.", jpSentence:"犬を1匹見ました。"},
+{en:"an", jp:"1つの", enSentence:"She has an idea.", jpSentence:"彼女には考えがあります。"},
+{en:"the", jp:"その", enSentence:"The door is open.", jpSentence:"そのドアは開いています。"},
+{en:"some", jp:"いくつかの", enSentence:"I bought some food.", jpSentence:"食べ物をいくつか買いました。"},
+{en:"any", jp:"何かの", enSentence:"Do you have any time?", jpSentence:"何か時間はありますか？"},
+
+{en:"no", jp:"〜ない", enSentence:"There is no problem.", jpSentence:"問題はありません。"},
+{en:"each", jp:"それぞれ", enSentence:"Each student tries.", jpSentence:"それぞれの学生が頑張ります。"},
+{en:"every", jp:"すべての", enSentence:"Every day counts.", jpSentence:"毎日が大切です。"},
+{en:"all", jp:"すべて", enSentence:"All are welcome.", jpSentence:"誰でも歓迎です。"},
+{en:"most", jp:"ほとんど", enSentence:"Most people agree.", jpSentence:"ほとんどの人が賛成します。"},
+
+{en:"be", jp:"〜である", enSentence:"Be careful.", jpSentence:"気をつけてください。"},
+{en:"am", jp:"〜です", enSentence:"I am ready.", jpSentence:"準備できています。"},
+{en:"is", jp:"〜です", enSentence:"He is here.", jpSentence:"彼はここにいます。"},
+{en:"are", jp:"〜です", enSentence:"They are happy.", jpSentence:"彼らは幸せです。"},
+{en:"was", jp:"〜だった", enSentence:"I was tired.", jpSentence:"私は疲れていました。"},
+
+{en:"were", jp:"〜だった", enSentence:"They were late.", jpSentence:"彼らは遅れていました。"},
+{en:"do", jp:"する", enSentence:"Do your best.", jpSentence:"ベストを尽くしてください。"},
+{en:"does", jp:"する", enSentence:"He does his work.", jpSentence:"彼は仕事をします。"},
+{en:"did", jp:"した", enSentence:"I did my job.", jpSentence:"私は仕事をしました。"},
+{en:"have", jp:"持つ", enSentence:"I have time.", jpSentence:"時間があります。"},
+
+{en:"has", jp:"持っている", enSentence:"She has a car.", jpSentence:"彼女は車を持っています。"},
+{en:"had", jp:"持っていた", enSentence:"I had a plan.", jpSentence:"私は計画を持っていました。"},
+{en:"can", jp:"できる", enSentence:"I can help.", jpSentence:"助けられます。"},
+{en:"could", jp:"できた", enSentence:"I could understand.", jpSentence:"理解できました。"},
+{en:"will", jp:"〜するだろう", enSentence:"I will go.", jpSentence:"行きます。"},
+
+{en:"would", jp:"〜だろう", enSentence:"I would agree.", jpSentence:"私は賛成するでしょう。"},
+{en:"may", jp:"〜かもしれない", enSentence:"It may rain.", jpSentence:"雨が降るかもしれません。"},
+{en:"might", jp:"〜かもしれない", enSentence:"He might come.", jpSentence:"彼は来るかもしれません。"},
+{en:"must", jp:"〜しなければならない", enSentence:"You must go.", jpSentence:"行かなければなりません。"},
+{en:"should", jp:"〜すべき", enSentence:"You should try.", jpSentence:"挑戦すべきです。"},
+
+{en:"and", jp:"そして", enSentence:"Tea and coffee.", jpSentence:"紅茶とコーヒー。"},
+{en:"or", jp:"または", enSentence:"Tea or coffee?", jpSentence:"紅茶かコーヒー？"},
+{en:"but", jp:"しかし", enSentence:"I tried but failed.", jpSentence:"挑戦しましたが失敗しました。"},
+{en:"so", jp:"だから", enSentence:"It rained, so I stayed.", jpSentence:"雨だったので家にいました。"},
+{en:"because", jp:"なぜなら", enSentence:"I stayed because tired.", jpSentence:"疲れていたので休みました。"},
+
+{en:"if", jp:"もし", enSentence:"If it rains, stay.", jpSentence:"もし雨なら、いてください。"},
+{en:"when", jp:"いつ", enSentence:"When are you free?", jpSentence:"いつ暇ですか？"},
+{en:"while", jp:"〜の間", enSentence:"Listen while working.", jpSentence:"作業しながら聞いてください。"},
+{en:"though", jp:"〜だけれども", enSentence:"I went though tired.", jpSentence:"疲れていましたが行きました。"},
+{en:"although", jp:"〜にもかかわらず", enSentence:"Although busy, he came.", jpSentence:"忙しかったが彼は来ました。"},
+
+{en:"who", jp:"誰", enSentence:"Who is he?", jpSentence:"彼は誰ですか？"},
+{en:"what", jp:"何", enSentence:"What is this?", jpSentence:"これは何ですか？"},
+{en:"where", jp:"どこ", enSentence:"Where are you?", jpSentence:"どこにいますか？"},
+{en:"when", jp:"いつ", enSentence:"When do we start?", jpSentence:"いつ始めますか？"},
+{en:"why", jp:"なぜ", enSentence:"Why are you here?", jpSentence:"なぜここにいますか？"},
+
+{en:"how", jp:"どのように", enSentence:"How does it work?", jpSentence:"どうやって動きますか？"},
+{en:"which", jp:"どれ", enSentence:"Which one?", jpSentence:"どれですか？"},
+{en:"not", jp:"〜ない", enSentence:"I am not ready.", jpSentence:"準備できていません。"},
+{en:"never", jp:"決して〜ない", enSentence:"I never lie.", jpSentence:"決して嘘をつきません。"},
+{en:"really", jp:"本当に", enSentence:"I really agree.", jpSentence:"本当に賛成です。"},
+
+{en:"one", jp:"1つ", enSentence:"Take one.", jpSentence:"1つ取ってください。"},
+{en:"two", jp:"2つ", enSentence:"Two are enough.", jpSentence:"2つで十分です。"},
+{en:"three", jp:"3つ", enSentence:"Three left.", jpSentence:"3つ残っています。"},
+{en:"many", jp:"多くの", enSentence:"Many people came.", jpSentence:"多くの人が来ました。"},
+{en:"much", jp:"多くの", enSentence:"Much time passed.", jpSentence:"多くの時間が過ぎました。"},
+
+{en:"few", jp:"少しの", enSentence:"Few people know.", jpSentence:"知っている人は少ないです。"},
+{en:"little", jp:"少量の", enSentence:"I have little time.", jpSentence:"時間がほとんどありません。"},
+{en:"more", jp:"より多く", enSentence:"I need more.", jpSentence:"もっと必要です。"},
+{en:"less", jp:"より少なく", enSentence:"Eat less.", jpSentence:"少なめに食べてください。"},
+{en:"enough", jp:"十分な", enSentence:"This is enough.", jpSentence:"これで十分です。"},
+
+{en:"yes", jp:"はい", enSentence:"Yes, I tell you.", jpSentence:"はい、言います。"},
+{en:"no", jp:"いいえ", enSentence:"No, thank you.", jpSentence:"いいえ、結構です。"},
+{en:"okay", jp:"大丈夫", enSentence:"Okay, I understand.", jpSentence:"大丈夫、理解しました。"},
+{en:"please", jp:"お願いします", enSentence:"Please help me.", jpSentence:"助けてください。"},
+{en:"thanks", jp:"ありがとう", enSentence:"Thanks a lot.", jpSentence:"ありがとうございます。"},
+
+{en:"hello", jp:"こんにちは", enSentence:"Hello everyone.", jpSentence:"みなさん、こんにちは。"},
+{en:"goodbye", jp:"さようなら", enSentence:"Goodbye for now.", jpSentence:"またね。"},
+{en:"well", jp:"ええと", enSentence:"Well, let me think.", jpSentence:"ええと、考えさせてください。"},
+{en:"also", jp:"〜も", enSentence:"I also agree.", jpSentence:"私も賛成です。"},
+{en:"just", jp:"ちょうど", enSentence:"I just arrived.", jpSentence:"ちょうど着きました。"},      
+    ],
+  };
+
+  // ===== 状態管理 =====
+  let currentCategoryId = null;
+  let currentIndex = 0;
+  let hasShownJapanese = false;
+  let isSavedView = false;
+
+  // 保存済み（"categoryId:en" の配列）
+  let savedKeys = JSON.parse(localStorage.getItem("pocketWordsSaved") || "[]");
+
+  // DOM取得
+  const homeView      = document.getElementById("homeView");
+  const cardView      = document.getElementById("cardView");
+  const aboutView     = document.getElementById("aboutView");
+  const categoryLabel = document.getElementById("categoryLabel");
+  const backLink      = document.getElementById("backLink");
+
+  const card          = document.getElementById("card");
+  const counterText   = document.getElementById("counterText");
+  const enWordEl      = document.getElementById("enWord");
+  const enSentenceEl  = document.getElementById("enSentence");
+  const jpWordEl      = document.getElementById("jpWord");
+  const jpSentenceEl  = document.getElementById("jpSentence");
+
+  const starToggle    = document.getElementById("starToggle");
+  const slider        = document.getElementById("cardSlider");
+  const sliderWrap    = document.getElementById("sliderWrap");
+  const emptySavedMsg = document.getElementById("emptySavedMessage");
+  const savedCountEl  = document.getElementById("savedCount");
+
+  // ===== ユーティリティ =====
+  function makeKey(catId, wordObj){
+    return catId + ":" + wordObj.en;
+  }
+
+  function getCategoryNameJa(id){
+    const map = {
+      verbs:"動詞",
+      people:"人",
+      food:"食事",
+      time:"時間・数",
+      school:"学校・仕事",
+      home:"生活",
+      travel:"交通・旅行",
+      nature:"自然",
+      body:"体",
+      mind:"感情・考え",
+      hobby:"趣味",
+      it:"IT",
+      saved:"保存済み"
+    };
+    return map[id] || "";
+  }
+
+  function getSavedWordList(){
+    const result = [];
+    savedKeys.forEach(key=>{
+      const [catId,en] = key.split(":");
+      const list = wordSets[catId];
+      if(!list) return;
+      const w = list.find(item=>item.en === en);
+      if(w){
+        result.push(Object.assign({_categoryId:catId}, w));
+      }
+    });
+    return result;
+  }
+
+  function getCurrentList(){
+    if(isSavedView){
+      return getSavedWordList();
+    }
+    return wordSets[currentCategoryId] || [];
+  }
+
+  function updateSavedCount(){
+    savedCountEl.textContent = savedKeys.length + "語";
+  }
+
+  updateSavedCount();
+
+  // ===== 分野カードのクリック =====
+  document.querySelectorAll(".category-card").forEach(cardEl=>{
+    cardEl.addEventListener("click", ()=>{
+      const id = cardEl.getAttribute("data-id");
+
+      if(id === "saved"){
+        openSaved();
+      }else if(id === "about"){
+        openAbout();
+      }else{
+        openCategory(id);
+      }
+    });
+  });
+
+  function openCategory(id){
+    isSavedView = false;
+    currentCategoryId = id;
+    currentIndex = 0;
+    hasShownJapanese = false;
+    homeView.style.display  = "block";
+    aboutView.style.display = "none";
+    homeView.style.display  = "none";
+    cardView.style.display  = "block";
+    categoryLabel.textContent = getCategoryNameJa(id);
+    renderCard();
+  }
+
+  function openSaved(){
+    isSavedView = true;
+    currentCategoryId = "saved";
+    currentIndex = 0;
+    hasShownJapanese = false;
+    homeView.style.display  = "none";
+    aboutView.style.display = "none";
+    cardView.style.display  = "block";
+    categoryLabel.textContent = getCategoryNameJa("saved");
+    renderCard();
+  }
+
+  function openAbout(){
+    // About表示
+    homeView.style.display  = "none";
+    cardView.style.display  = "none";
+    aboutView.style.display = "block";
+    if("speechSynthesis" in window){
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  function backFromAbout(){
+    aboutView.style.display = "none";
+    homeView.style.display  = "block";
+  }
+
+  // ===== カード表示 =====
+  function renderCard(){
+    const list = getCurrentList();
+
+    if(list.length === 0){
+      card.style.display = "none";
+      sliderWrap.style.display = "none";
+      emptySavedMsg.style.display = isSavedView ? "block" : "none";
+      return;
+    }else{
+      card.style.display = "flex";
+      sliderWrap.style.display = "block";
+      emptySavedMsg.style.display = "none";
+    }
+
+    const w = list[currentIndex];
+
+    card.classList.remove("show-jp");
+    hasShownJapanese = false;
+
+    counterText.textContent = (currentIndex+1) + " / " + list.length;
+    enWordEl.textContent = w.en;
+    enSentenceEl.textContent = w.enSentence;
+    jpWordEl.textContent = w.jp;
+    jpSentenceEl.textContent = w.jpSentence;
+
+    slider.min  = 1;
+    slider.max  = list.length;
+    slider.value = currentIndex + 1;
+
+    updateStarIcon();
+  }
+
+  function updateStarIcon(){
+    const list = getCurrentList();
+    if(list.length === 0){
+      starToggle.style.visibility = "hidden";
+      return;
+    }
+    starToggle.style.visibility = "visible";
+
+    const w = list[currentIndex];
+    const catId = isSavedView ? w._categoryId : currentCategoryId;
+    const key = makeKey(catId, w);
+    const saved = savedKeys.includes(key);
+
+    starToggle.textContent = saved ? "★" : "☆";
+    starToggle.classList.toggle("saved", saved);
+  }
+
+  // ===== カードタップ：1回→日本語＋音声 / 2回→次へ =====
+  card.addEventListener("click", ()=>{
+    const list = getCurrentList();
+    if(list.length === 0) return;
+
+    if(!hasShownJapanese){
+      hasShownJapanese = true;
+      card.classList.add("show-jp");
+      speakEnglish(enWordEl.textContent);
+    }else{
+      currentIndex = (currentIndex + 1) % list.length;
+      renderCard();
+    }
+  });
+
+  // ===== スタータップ：保存/解除 =====
+  starToggle.addEventListener("click", (e)=>{
+    e.stopPropagation(); // カードクリックイベントを止める
+    const list = getCurrentList();
+    if(list.length === 0) return;
+
+    const w = list[currentIndex];
+    const catId = isSavedView ? w._categoryId : currentCategoryId;
+    const key = makeKey(catId, w);
+    const idx = savedKeys.indexOf(key);
+
+    if(idx === -1){
+      savedKeys.push(key);
+    }else{
+      savedKeys.splice(idx,1);
+    }
+    localStorage.setItem("pocketWordsSaved", JSON.stringify(savedKeys));
+    updateSavedCount();
+
+    if(isSavedView){
+      const newList = getSavedWordList();
+      if(newList.length === 0){
+        renderCard();
+        return;
+      }
+      if(currentIndex >= newList.length){
+        currentIndex = newList.length - 1;
+      }
+    }
+
+    renderCard();
+  });
+
+  // ===== スライダー操作 =====
+  slider.addEventListener("input", ()=>{
+    const list = getCurrentList();
+    if(list.length === 0) return;
+    let idx = Number(slider.value) - 1;
+    if(idx < 0) idx = 0;
+    if(idx >= list.length) idx = list.length - 1;
+    currentIndex = idx;
+    renderCard();
+    incrementWordView();
+  });
+
+  // ===== 戻る =====
+  backLink.addEventListener("click", ()=>{
+    cardView.style.display  = "none";
+    aboutView.style.display = "none";
+    homeView.style.display  = "block";
+    if("speechSynthesis" in window){
+      window.speechSynthesis.cancel();
+    }
+  });
+
+  // ===== 英語音声 =====
+  function speakEnglish(text){
+    if(!("speechSynthesis" in window)) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.rate = 1.0;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  }
+/** ====== 日付ユーティリティ（日本時間で判定） ====== */
+function todayJST(){
+  const now = new Date();
+  // JSTの「日付」(YYYY-MM-DD) を作る
+  const jst = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+  return jst.toISOString().slice(0,10);
+}
+function addDays(ymd, diff){
+  const [y,m,d] = ymd.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m-1, d));
+  dt.setUTCDate(dt.getUTCDate() + diff);
+  return dt.toISOString().slice(0,10);
+}
+
+/** ====== 保存データ ======
+  studyDays: ["YYYY-MM-DD", ...]  // 学習した日
+  lastStudy: "YYYY-MM-DD"         // 最終学習日
+  streak: number                  // 連続日数
+  totalViews: number              // 総単語閲覧数
+*/
+function load(key, fallback){
+  try{
+    const v = localStorage.getItem(key);
+    return v === null ? fallback : JSON.parse(v);
+  }catch(e){
+    return fallback;
+  }
+}
+function save(key, value){
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+/** ====== 学習日を1回だけ記録（その日初回の時だけstreak更新） ====== */
+function markStudyDone(){
+  const today = todayJST();
+  const yesterday = addDays(today, -1);
+
+  let studyDays = load("studyDays", []);
+  let lastStudy = load("lastStudy", null);
+  let streak = load("streak", 0);
+
+  // その日の初回学習なら記録
+  if (!studyDays.includes(today)) {
+    studyDays.push(today);
+    save("studyDays", studyDays);
+
+    // 連続判定
+    if (lastStudy === yesterday) {
+      streak = streak + 1;
+    } else if (lastStudy === today) {
+      // あり得ないが保険
+    } else {
+      streak = 1; // リセットして今日から
+    }
+    lastStudy = today;
+
+    save("streak", streak);
+    save("lastStudy", lastStudy);
+  }
+
+  renderStats();
+}
+
+/** ====== 単語閲覧数を加算 ====== */
+function incrementWordView(count=1){
+  const total = Number(localStorage.getItem("totalViews") || "0") + count;
+  localStorage.setItem("totalViews", String(total));
+
+  // 「単語を見た」＝学習した日にするのが自然
+  markStudyDone();
+}
+
+/** ====== 表示更新 ====== */
+function renderStats(){
+  const streak = load("streak", 0);
+  const studyDays = load("studyDays", []);
+  const totalViews = Number(localStorage.getItem("totalViews") || "0");
+
+  const streakEl = document.getElementById("streak");
+  const totalDaysEl = document.getElementById("totalDays");
+  const totalViewsEl = document.getElementById("totalViews");
+
+  if (streakEl) streakEl.textContent = `🔥 連続学習：${streak}日`;
+  if (totalDaysEl) totalDaysEl.textContent = `📅 累計学習：${studyDays.length}日`;
+  if (totalViewsEl) totalViewsEl.textContent = `⭐ 総単語閲覧数：${totalViews}回`;
+}
+
+/** ====== 初期表示 ====== */
+renderStats();
+
+/** ====== 使い方 ======
+  - 単語を表示したタイミングで incrementWordView() を呼ぶ
+  - 例：単語カードを開いたとき / 次へボタンを押したとき 等
+*/
+</script>
+</body>
+</html>
